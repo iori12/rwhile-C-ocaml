@@ -28,6 +28,10 @@ if ($example == 1) {
 	$filename = "ri.rwhile";
 } else if ($example == 6) {
 	$filename = "ri.rwhile";
+} else if ($example == 7) {
+	$filename = "infinite.rwhile";
+} else if ($example == 8) {
+	$filename = "enumeration.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -50,6 +54,8 @@ if ($example == 1) {
     $data = "piorder.p_val";
 } else if ($example == 6) {
     $data = "ri_ri_reverse_list123.p_val";
+} else if ($example == 8) {
+    $data = "nil.val";
 } else {
     $data = "list123.val";
 }
@@ -74,6 +80,8 @@ echo($con);
  <li> <a href="index.php?example=4">self-interpretation of reverse</a>
  <li> <a href="index.php?example=5">self-interpretation of piorder</a>
  <li> <a href="index.php?example=6">self-interpretation of self-interpretation of reverse (This will probably time out in this playground.)</a>
+ <li> <a href="index.php?example=7">Infinite loop (in *both* directions)</a>
+ <li> <a href="index.php?example=8">Enumeration of trees</a>
 </ul>
 
   </body>

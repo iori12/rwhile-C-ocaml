@@ -39,5 +39,8 @@ let () =
      let channel = open_in data_filename in
      let data = parseValT channel in 
      let _ = close_in channel in
-     print_endline (showValT (EvalRwhile.evalProgram prog data))
+     (try
+        print_endline (showValT (EvalRwhile.evalProgram prog data))
+      with
+        Failure(str) -> print_endline ("Error:\n" ^ str))
   | _ -> failwith "Invalid arguments"

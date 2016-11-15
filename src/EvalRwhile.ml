@@ -188,4 +188,4 @@ and evalProgram (p : program) (v : valT): valT =
   let res = evalVariable s2 (Var y) in
   let s3 = rupdate (y, res) s2 in
   if all_cleared s3 then res 
-  else failwith "Some variables are not nil."
+  else failwith ("Some variables are not nil.\n" ^ printTree prtStore s2)

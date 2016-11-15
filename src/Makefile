@@ -1,5 +1,5 @@
-#OCAMLC=ocamlfind ocamlc -g -package extlib -linkpkg
-OCAMLC=ocamlfind ocamlopt -warn-error A -package extlib -linkpkg
+OCAMLC=ocamlfind ocamlc -g -package extlib -linkpkg
+#OCAMLC=ocamlfind ocamlopt -warn-error A -package extlib -linkpkg
 
 all: ri
 
@@ -37,3 +37,4 @@ test: ri
 	# ./ri ../examples/ri.rwhile ../examples/ri_reverse_list123.p_val    # 6.6s かかった
 	# ./ri ../examples/ri.rwhile ../examples/ri_piorder_atree.p_val      # 1分以上かかるかも
 	# ./ri ../examples/ri.rwhile ../examples/ri_ri_reverse_list123.p_val # 1:31:39.23もかかった
+	./ri ../examples/enumeration.rwhile ../examples/nil.val
