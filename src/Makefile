@@ -38,3 +38,4 @@ test: ri
 	# ./ri ../examples/ri.rwhile ../examples/ri_piorder_atree.p_val      # 1分以上かかるかも
 	# ./ri ../examples/ri.rwhile ../examples/ri_ri_reverse_list123.p_val # 1:31:39.23もかかった
 	./ri ../examples/enumeration.rwhile ../examples/nil.val
+	./ri ../examples/length.rwhile ../examples/list123.val
