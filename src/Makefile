@@ -39,3 +39,14 @@ test: ri
 	# ./ri ../examples/ri.rwhile ../examples/ri_ri_reverse_list123.p_val # 1:31:39.23もかかった
 	./ri ../examples/enumeration.rwhile ../examples/nil.val
 	./ri ../examples/length.rwhile ../examples/list123.val
+	# ./ri ../examples/perm_to_code.rwhile ../examples/perm_to_code.val  # failed?
+	./ri ../examples/compare.rwhile ../examples/compare0.val
+	./ri ../examples/minus.rwhile ../examples/minus.val
+	./ri ../examples/rle.rwhile ../examples/rle0.val
+	./ri ../examples/rle.rwhile ../examples/rle1.val
+	./ri ../examples/rle.rwhile ../examples/rle2.val
+	./ri ../examples/rle.rwhile ../examples/rle3.val
+	./ri ../examples/rle.rwhile ../examples/rle4.val
+	#./ri ../examples/infinite.rwhile ../examples/nil.val   #停止しない例
+	./ri ../examples/lookup_ppl2015.rwhile ../examples/nil.val
+	./ri ../examples/lookup.rwhile ../examples/nil.val
