@@ -50,5 +50,10 @@ echo($con);
  <li> <a href="index.php?example=1">reverse</a>
 </ul>
 
+<h2>Source code</h2>
+<ul>
+ <li> <a href="https://github.com/tetsuo-jp/rwhile-C-ocaml/tree/w_procedure">source program</a>
+</ul>
+
   </body>
 </html>
