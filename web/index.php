@@ -10,7 +10,7 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
   </head>
 
   <body>
-  <h1>R-WHILE Playground</h1>
+  <h1>R-WHILE (w/ procedures) Playground</h1>
 
 <form action="execute.php" method="post">
 <h3>R-WHILE code</h3>

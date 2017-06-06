@@ -29,6 +29,8 @@ distclean: clean
 
 install: ri
 	cp -f ./ri ../web/
+	mkdir -p ../web/data ../web/programs
+	chmod 777 ../web/data ../web/programs
 
 test: ri
 	./ri ../examples/rep.rwhile ../examples/list123.val
