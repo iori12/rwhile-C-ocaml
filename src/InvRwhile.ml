@@ -9,10 +9,8 @@ let invMacroName (RIdent str) : rIdent =
 	  else "INV-" ^ str)
 
 let rec invCom = function
-    CMac (x, idents) -> CMac (invMacroName x, idents) 
-  | CAss (x, e) -> CAss (x, e)
+  | CAsn (x, e) -> CAsn (x, e)
   | CRep (p1, p2) -> CRep (p2, p1)
-  | CSeq (c, d) -> CSeq (invCom d, invCom c)
   | CCond (e, thenbranch, elsebranch, f) -> 
      CCond (f, invThenBranch thenbranch, invElseBranch elsebranch, e)
   | CLoop (e, dobranch, loopbranch, f) ->
@@ -20,19 +18,21 @@ let rec invCom = function
   | CShow e -> CShow e
 
 and invThenBranch = function
-    BThen c   -> BThen (invCom c)
+    BThen cs   -> BThen (List.rev (List.map invCom cs))
   | BThenNone -> BThenNone
 
 and invElseBranch = function
-    BElse c   -> BElse (invCom c)
+    BElse cs  -> BElse (List.rev (List.map invCom cs))
   | BElseNone -> BElseNone
 
 and invDoBranch = function
-    BDo c   -> BDo (invCom c)
+    BDo cs  -> BDo (List.rev (List.map invCom cs))
   | BDoNone -> BDoNone
 
 and invLoopBranch = function
-    BLoop c   -> BLoop (invCom c)
+    BLoop cs  -> BLoop (List.rev (List.map invCom cs))
   | BLoopNone -> BLoopNone
 
-let invProgram (Prog (macros, x, c, y)) = Prog (macros, y, invCom c, x)
+let invProc (Proc (name, x, c, y)) : AbsRwhile.proc = Proc (name, y, List.rev (List.map invCom c), x)
+
+let invProgram (Prog ps) = Prog (List.map invProc ps)

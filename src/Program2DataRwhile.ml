@@ -25,19 +25,23 @@ and transExp (x : exp) : valT =
 	 | ECons (e1, e2) -> [atom "'cons"; transExp e1; transExp e2]
 	 | EHd e -> [atom "'hd"; transExp e]
 	 | ETl e -> [atom "'tl"; transExp e]
-	 | EEq (e1, e2) -> [atom "'eq"; transExp e1; transExp e2])
+	 | EEq (e1, e2) -> [atom "'eq"; transExp e1; transExp e2]
+         | EAnd (e1, e2) -> [atom "'and"; transExp e1; transExp e2])
 
 and transPat (x : pat) : valT = 
   conss (match x with
 	 | PCons (p1, p2) -> [atom "'cons"; transPat p1; transPat p2]
 	 | PVar var -> [transVariable var]
-	 | PVal val' -> [atom "'val"; val'])
+	 | PNil -> [VNil]
+	 | PAtom x -> [atom "'val"; VAtom x]
+         | PCall (x,p) -> [atom "'call"; transPat p])
+
+and transComs (cs : com list) : valT = 
+  conss (List.map transCom cs)
 
 and transCom (c : com) : valT = 
   conss (match c with
-	 | CSeq (c1, c2) -> [atom "'seq"; transCom c1; transCom c2]
-	 | CMac (rident, ridents) -> failwith "error in transCom"
-	 | CAss (x, e) -> [atom "'ass"; conss [atom "'var"; transRIdent x]; transExp e]
+	 | CAsn (x, e) -> [atom "'ass"; conss [atom "'var"; transRIdent x]; transExp e]
 	 | CRep (p1, p2) -> [atom "'rep"; transPat p1; transPat p2]
 	 | CCond (e, thenbranch, elsebranch, f) -> 
 	    [atom "'cond"; conss [transExp e; transThenBranch thenbranch; transElseBranch elsebranch; transExp f; VNil]]
@@ -46,36 +50,35 @@ and transCom (c : com) : valT =
 	 | CShow e -> [])
 
 and transThenBranch = function
-    BThen com -> transCom com
+    BThen com -> transComs com
   | BThenNone -> doNothing
 
 and transElseBranch = function
-    BElse com -> transCom com
+    BElse com -> transComs com
   | BElseNone -> doNothing
 
 and transDoBranch = function
-    BDo com -> transCom com
+    BDo com -> transComs com
   | BDoNone -> doNothing
 
 and transLoopBranch = function
-    BLoop com -> transCom com
+    BLoop com -> transComs com
   | BLoopNone -> doNothing
 
-and transProgram = function
-    Prog ([], x, c, y) -> conss [conss [atom "'var"; transRIdent x];
-				transCom c;
-				conss [atom "'var"; transRIdent y]]
-  | _ -> failwith "Impossible happened."
+and transProc = function
+    Proc (name, x, c, y) -> conss [conss [transRIdent name];
+                                   conss [atom "'var"; transPat x];
+				   transComs c;
+				   conss [atom "'var"; transPat y]]
 
-and transMacro (x : macro) : valT = match x with
-    Mac (rident, ridents, com) -> failwith "error in transMacro"
-
+let transProgram (Prog ps) = conss (List.map transProc ps)
 
 (* substitution *)
 type subst = (rIdent * rIdent) list
 
 let rec substRIdent (s : subst) (x : rIdent) : rIdent = 
-  try assoc x s with Not_found -> x
+  try assoc x s with
+    Not_found -> (print_endline "in Program2DataRwhile"; x)
 
 and substVariable s (Var x) : variable = Var (substRIdent s x)
 
@@ -84,18 +87,21 @@ and substExp s = function
   | EHd e -> EHd (substExp s e)
   | ETl e -> ETl (substExp s e)
   | EEq (e, f) -> EEq (substExp s e, substExp s f)
+  | EAnd (e, f) -> EAnd (substExp s e, substExp s f)
   | EVar x -> EVar (substVariable s x)
   | EVal v -> EVal v
 
 and substPat s = function
     PCons (p1, p2) -> PCons (substPat s p1, substPat s p2)
   | PVar x -> PVar (substVariable s x)
-  | PVal v -> PVal v
+  | PNil -> PNil
+  | PAtom x -> PAtom x
+  | PCall (x,p) -> PCall (x, substPat s p)
+
+and substComs s cs = List.map (substCom s) cs
 
 and substCom s = function
-    CSeq (c, d) -> CSeq (substCom s c, substCom s d)
-  | CMac (m, xs) -> CMac (m, map (substRIdent s) xs)
-  | CAss (x, e) -> CAss (substRIdent s x, substExp s e)
+  | CAsn (x, e) -> CAsn (substRIdent s x, substExp s e)
   | CRep (p1, p2) -> CRep (substPat s p1, substPat s p2)
   | CCond (e, thenbranch, elsebranch, f) ->
      CCond (substExp s e, substThenBranch s thenbranch, substElseBranch s elsebranch, substExp s f)
@@ -104,31 +110,31 @@ and substCom s = function
   | CShow e -> CShow (substExp s e)
 
 and substThenBranch s = function
-    BThen c   -> BThen (substCom s c)
+    BThen cs  -> BThen (substComs s cs)
   | BThenNone -> BThenNone
 
 and substElseBranch s = function
-    BElse c   -> BElse (substCom s c)
+    BElse c   -> BElse (substComs s c)
   | BElseNone -> BElseNone
 
 and substDoBranch s = function
-    BDo c   -> BDo (substCom s c)
+    BDo c   -> BDo (substComs s c)
   | BDoNone -> BDoNone
 
 and substLoopBranch s = function
-    BLoop com -> BLoop (substCom s com)
+    BLoop com -> BLoop (substComs s com)
   | BLoopNone -> BLoopNone
 
-and substProgram s (Prog (macros, x, c, y)) =
-  Prog (map (substMacro s) macros, substRIdent s x, substCom s c, substRIdent s y)
+and substProc s (Proc (name, x, cs, y)) =
+  Proc (name, substPat s x, substComs s cs, substPat s y)
 
-and substMacro s (Mac (x, xs, c)) = Mac (x, map (substRIdent s) xs, substCom s c)
+and substProgram s (Prog ps) =
+  Prog (List.map (substProc s) ps)
 
 let program2data (p : program) : valT =
-  let p2 = MacroRwhile.expMacProgram p in
-  let vs = EvalRwhile.varProgram p2 in
+  let vs = EvalRwhile.varProgram p in
   let rec incseq m n = if m = n then [m] else m :: incseq (m+1) n in
   let ws = map (fun n -> RIdent (string_of_int n)) (incseq 1 (length vs)) in
-  let p3 = substProgram (combine vs ws) p2 in
+  let p3 = substProgram (combine vs ws) p in
   (* print_string (PrintRwhile.printTree PrintRwhile.prtProgram p3 ^ "\n"); *)
   transProgram p3

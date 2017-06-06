@@ -6,7 +6,7 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>R-WHILE Playground</title>
+    <title>R-WHILE (w/ procedures) Playground</title>
   </head>
 
   <body>
@@ -17,21 +17,7 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
 <textarea name="prog" rows="20" cols="100">
 <?php
 if ($example == 1) {
-	$filename = "swap.rwhile";
-} else if ($example == 2) {
-	$filename = "piorder.rwhile";
-} else if ($example == 3) {
-	$filename = "ri.rwhile";
-} else if ($example == 4) {
-	$filename = "ri.rwhile";
-} else if ($example == 5) {
-	$filename = "ri.rwhile";
-} else if ($example == 6) {
-	$filename = "ri.rwhile";
-} else if ($example == 7) {
-	$filename = "infinite.rwhile";
-} else if ($example == 8) {
-	$filename = "enumeration.rwhile";
+	$filename = "reverse.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -43,21 +29,9 @@ echo($con);
 <textarea name="data" rows="10" cols="100">
 <?php
 if ($example == 1) {
-    $data = "list123.val";
-} else if ($example == 2) {
-    $data = "piorder_input05.val";
-} else if ($example == 3) {
-    $data = "id_and_nil.p_val";
-} else if ($example == 4) {
-    $data = "reverse_and_list123.p_val";
-} else if ($example == 5) {
-    $data = "piorder.p_val";
-} else if ($example == 6) {
-    $data = "ri_ri_reverse_list123.p_val";
-} else if ($example == 8) {
-    $data = "nil.val";
+    $data = "reverse.val";
 } else {
-    $data = "list123.val";
+    $data = "reverse.val";
 }
 $con = file_get_contents("examples/$data");
 echo($con);
@@ -73,15 +47,7 @@ echo($con);
 
 <h2>Sample programs and data</h2>
 <ul>
- <li> <a href="index.php?example=0">reverse</a>
- <li> <a href="index.php?example=1">swap</a>
- <li> <a href="index.php?example=2">translation from a tree to its preorder and inorder traversal (piorder)</a>
- <li> <a href="index.php?example=3">self-interpretation of an identity function</a>
- <li> <a href="index.php?example=4">self-interpretation of reverse</a>
- <li> <a href="index.php?example=5">self-interpretation of piorder</a>
- <li> <a href="index.php?example=6">self-interpretation of self-interpretation of reverse (This will probably time out in this playground.)</a>
- <li> <a href="index.php?example=7">Infinite loop (in *both* directions)</a>
- <li> <a href="index.php?example=8">Enumeration of trees</a>
+ <li> <a href="index.php?example=1">reverse</a>
 </ul>
 
   </body>
