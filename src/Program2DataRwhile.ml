@@ -14,7 +14,7 @@ let doNothing = conss [atom "'ass"; conss [atom "'var"; VNil]; conss [atom "'val
 
 let rec transRIdent (RIdent str) : valT =
   try conss (repeat VNil (int_of_string str))
-  with Failure("int_of_string") -> failwith "Impossible happened."
+  with Failure("int_of_string") -> failwith "Impossible happened in transRIdent."
 
 and transVariable (Var rident) : valT = conss [atom "'var"; transRIdent rident]
 
@@ -136,5 +136,5 @@ let program2data (p : program) : valT =
   let rec incseq m n = if m = n then [m] else m :: incseq (m+1) n in
   let ws = map (fun n -> RIdent (string_of_int n)) (incseq 1 (length vs)) in
   let p3 = substProgram (combine vs ws) p in
-  (* print_string (PrintRwhile.printTree PrintRwhile.prtProgram p3 ^ "\n"); *)
+  print_endline (PrintRwhile.printTree PrintRwhile.prtProgram p3);
   transProgram p3

@@ -1,5 +1,4 @@
 proc MAIN(X)
-  Y <= nil;
   TMP <= (X.Y);
   (Y.N) <= call REV(TMP);
   TMP2 <= (Y.N);
@@ -7,27 +6,19 @@ proc MAIN(X)
   return Y;
 
 proc REV((X.Y))
-  N <= nil;
-  H <= nil;
   if =? X nil
-  then N <= nil;
   else (H.X) <= X;
        Y <= (H.Y);
        (Y.N) <= call REV((X.Y));
        N <= (nil.N);
   fi =? N nil;
-  H <= nil;
   return (Y.N);
 
 proc ERASELEN((Y.N))
-  H <= nil;
   if && (=? N nil) (=? Y nil)
-  then N <= nil;
-       H <= nil;
   else (H.Y) <= Y;
        (nil.N) <= N;
        Y <= call ERASELEN((Y.N));
        Y <= (H.Y);
   fi =? Y nil;
-  H <= nil;
   return Y

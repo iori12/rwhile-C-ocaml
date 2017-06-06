@@ -61,6 +61,7 @@ let rec varPat : pat -> rIdent list = function
  | PAtom _ -> []
  | PNil  -> []
  | PCall (x,pat) -> varPat pat
+ (* | PUncall (x,pat) -> varPat pat *)
 
 let rec varCom : com -> rIdent list = function
   | CAsn (x,e) -> insert x (varExp e)
@@ -121,15 +122,16 @@ and evalPat s p = match p with
 		    (update (y,VNil) s, v)
   | PNil -> (s, VNil)
   | PAtom x -> (s, VAtom x)
-  | PCall (name,arg) -> let (s',v) = evalPat s arg in
-                        let aproc = 
-                          try
-                            find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
-                          with Not_found ->
-                            print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
-                            raise Not_found
-                        in
-                        (s',evalProgram (Prog (aproc :: !proc_list)) v)
+  | PCall (name,arg) ->
+     let (s',v) = evalPat s arg in
+     let aproc = 
+       try
+         find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+       with Not_found ->
+         print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
+         raise Not_found
+     in
+     (s',evalProgram (Prog (aproc :: !proc_list)) v)
 
 and inv_evalPat s (p,v) = match (p,v) with
     (PCons (p1, p2), VCons (v1, v2)) -> let s1 = inv_evalPat s (p1, v1) in
@@ -147,12 +149,21 @@ and inv_evalPat s (p,v) = match (p,v) with
 		          else failwith ("Pattern matching failed.\n" ^
 				           printTree prtPat (PAtom x) ^ " and " ^ printTree prtValT (VAtom y) ^ " are not equal (in inv_evalPat)\n" ^
 				             printTree prtStore s ^ "\n")
-  | (PCons _ as p, v) -> failwith ("impossible happened in inv_evalPat.PCons\n" ^
+  | (PCons _, v) -> failwith ("impossible happened in inv_evalPat.PCons\n" ^
 				     "pattern: " ^ printTree prtPat p ^ "\n" ^
 				       "term: " ^ printTree prtValT v ^ "\n" ^
 					 "store: " ^ printTree prtStore s ^ "\n"
 				  )
-  | (PCall (name,arg), v) -> failwith "ok"
+  | (PCall (name,arg), v') ->
+     let aproc = 
+       try
+         find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+       with Not_found ->
+         print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
+         raise Not_found
+     in
+     let v = evalProgram (InvRwhile.invProgram (Prog (aproc :: !proc_list))) v' in
+     inv_evalPat s (arg,v)
   | _ -> failwith "not matched"
 
 and evalComs (s : store) cs = match cs with
@@ -216,19 +227,3 @@ and evalProgram (Prog prog : program) (v : valT): valT =
     let (s3,res) = evalPat s2 y in
     if all_cleared s3 then res
     else failwith ("Some variables are not nil.\n" ^ printTree prtStore s3)
-
-
-    (*
-    and evalProc (s : store) (Proc (name, x, cs, y)) v =
-  let s1 = inv_evalPat s (x,v) in
-  print_endline "here2"; 
-  let s2 = evalComs s1 cs in
-  print_endline "here3"; 
-  let (s3,res) = evalPat s2 y in
-  if all_cleared s3 then res
-  else failwith ("Some variables are not nil.\n" ^ printTree prtStore s3)
-
-and evalProgram (Prog (p :: ps) : program) (v : valT): valT =
-  let s = List.map (fun x -> (x, VNil)) (varProc p) in
-  (proc_list := (p::ps); evalProc s p v)
-     *)

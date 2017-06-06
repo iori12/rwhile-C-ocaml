@@ -4,10 +4,10 @@
 --
 -- Variables   ∋ X, Y ::= X0 | X1 | ...
 -- Expressions ∋ E, F ::= X | d | cons E F | hd E | tl E | =? E F
--- Patterns    ∋ Q, R ::= X | d | cons Q R | call ID(X ... X)
+-- Patterns    ∋ Q, R ::= X | d | (Q.R) | call ID(Q)
 -- Commands    ∋ C, D ::= X ^= E | Q <= R | C; D
 --                      | if E then C else D fi F | from E do C loop D until F
--- Programs    ∋ P    ::= { proc ID(X ... X) C; return (Y ... Y) }*
+-- Programs    ∋ P    ::= { proc ID(Q) C; return (R) }*
 --
 -------------------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ ECons. Exp  ::= "cons" Exp1 Exp1 ;
 EHd.   Exp  ::= "hd" Exp1 ;
 ETl.   Exp  ::= "tl" Exp1 ;
 EEq.   Exp  ::= "=?" Exp1 Exp1 ;     -- Equality check
-EAnd.  Exp  ::= "&&" Exp1 Exp1 ;     -- Equality check
+EAnd.  Exp  ::= "&&" Exp1 Exp1 ;
 EVar.  Exp1 ::= Variable ;
 EVal.  Exp1 ::= Val ;
 coercions Exp 1;
@@ -67,11 +67,12 @@ coercions Exp 1;
 -- Pattern
 -------------------------------------------------------------------------------
 
-PCons. Pat ::= "(" Pat "." Pat ")" ;
-PVar.  Pat ::= Variable ;
-PAtom. Pat ::= Atom ;
-PNil.  Pat ::= "nil" ;
-PCall. Pat ::= "call" RIdent "(" Pat ")" ;
+PCons.   Pat ::= "(" Pat "." Pat ")" ;
+PVar.    Pat ::= Variable ;
+PAtom.   Pat ::= Atom ;
+PNil.    Pat ::= "nil" ;
+PCall.   Pat ::= "call" RIdent "(" Pat ")" ;
+-- PUncall. Pat ::= "uncall" RIdent "(" Pat ")" ;
 -- coercions Pat 1;
 
 

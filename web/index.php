@@ -37,10 +37,14 @@ $con = file_get_contents("examples/$data");
 echo($con);
 ?>
 </textarea>
+
+<!-- 
 <h3>Options</h3>
 <input type="checkbox" name="invert" value="1">Inversion
 <input type="checkbox" name="p2d" value="1">Program2data
 <input type="checkbox" name="exp" value="1">Expand macros
+-->
+
 <h3>Execute</h3>
 <input type="submit" value="Execute">
 </form>

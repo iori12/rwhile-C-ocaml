@@ -1,0 +1,52 @@
+proc ERASELEN((Y.N))
+  if && (=? N nil) (=? Y nil)
+  else (H.Y) <= Y;
+       (nil.N) <= N;
+       Y <= call ERASELEN((Y.N));
+       Y <= (H.Y);
+  fi =? Y nil;
+  return Y;
+
+proc MAIN(Y)
+  call ERASELEN(TMP2) <= Y;
+  (Y.N) <= TMP2;
+  call REV(TMP) <= (Y.N);
+  (X.Y) <= TMP;
+  return X;
+
+proc REV((X.Y))
+  if =? X nil
+  else (H.X) <= X;
+       Y <= (H.Y);
+       (Y.N) <= call REV((X.Y));
+       N <= (nil.N);
+  fi =? N nil;
+  return (Y.N);
+
+proc ERASELEN((Y.N))
+  if && (=? N nil) (=? Y nil)
+  else (H.Y) <= Y;
+       (nil.N) <= N;
+       Y <= call ERASELEN((Y.N));
+       Y <= (H.Y);
+  fi =? Y nil;
+  return Y;
+
+proc INV-REV((Y.N))
+  if =? N nil
+  else (nil.N) <= N;
+       call INV-REV ((X.Y)) <= (Y.N);
+       (H.Y) <= Y;
+       X <= (H.X);
+  fi =? X nil;
+  return (X.Y);
+
+proc INV-ERASELEN(Y)
+  (H.Y) <= Y;
+  if =? Y nil
+  else (H.Y) <= Y;
+       call INV-ERASELEN ((Y.N)) <= Y;
+       N <= (nil.N);
+       Y <= (H.Y);
+  fi && (=? N nil) (=? Y nil);
+  return (Y.N)
