@@ -1,0 +1,11 @@
+(* -1 *)
+
+proc MAIN(X)
+  X <= call DEC(X);
+  return X;
+
+proc DEC(call INC(X))
+  return X;
+
+proc INC(X)
+  return (nil.X)

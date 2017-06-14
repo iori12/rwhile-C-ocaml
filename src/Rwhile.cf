@@ -4,7 +4,7 @@
 --
 -- Variables   ∋ X, Y ::= X0 | X1 | ...
 -- Expressions ∋ E, F ::= X | d | cons E F | hd E | tl E | =? E F
--- Patterns    ∋ Q, R ::= X | d | (Q.R) | call ID(Q)
+-- Patterns    ∋ Q, R ::= X | d | (Q.R) | call ID(Q) | uncall ID(Q)
 -- Commands    ∋ C, D ::= X ^= E | Q <= R | C; D
 --                      | if E then C else D fi F | from E do C loop D until F
 -- Programs    ∋ P    ::= { proc ID(Q) C; return (R) }*
@@ -72,7 +72,7 @@ PVar.    Pat ::= Variable ;
 PAtom.   Pat ::= Atom ;
 PNil.    Pat ::= "nil" ;
 PCall.   Pat ::= "call" RIdent "(" Pat ")" ;
--- PUncall. Pat ::= "uncall" RIdent "(" Pat ")" ;
+PUncall. Pat ::= "uncall" RIdent "(" Pat ")" ;
 -- coercions Pat 1;
 
 

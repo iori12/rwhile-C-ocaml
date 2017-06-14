@@ -1,0 +1,6 @@
+(* +1 *)
+proc MAIN(X)
+  return call INC(X);
+
+proc INC(X)
+  return (nil.X)

@@ -1,0 +1,5 @@
+proc MAIN (call INC (X))
+  return X ;
+
+proc INC ((nil . X))
+  return X

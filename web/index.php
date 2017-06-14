@@ -18,6 +18,22 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
 <?php
 if ($example == 1) {
 	$filename = "reverse.rwhile";
+} if ($example == 11) {
+	$filename = "decrement1.rwhile";
+} if ($example == 12) {
+	$filename = "decrement2.rwhile";
+} if ($example == 13) {
+	$filename = "decrement3.rwhile";
+} if ($example == 14) {
+	$filename = "decrement4.rwhile";
+} if ($example == 15) {
+	$filename = "decrement5.rwhile";
+} if ($example == 21) {
+	$filename = "increment1.rwhile";
+} if ($example == 22) {
+	$filename = "increment2.rwhile";
+} if ($example == 23) {
+	$filename = "increment3.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -30,6 +46,8 @@ echo($con);
 <?php
 if ($example == 1) {
     $data = "reverse.val";
+} if (11 <= $example && $example <= 23) {
+    $data = "nil_nil_nil.val";
 } else {
     $data = "reverse.val";
 }
@@ -52,6 +70,14 @@ echo($con);
 <h2>Sample programs and data</h2>
 <ul>
  <li> <a href="index.php?example=1">reverse</a>
+ <li> <a href="index.php?example=11">decrement 1</a>
+ <li> <a href="index.php?example=12">decrement 2</a>
+ <li> <a href="index.php?example=13">decrement 3</a>
+ <li> <a href="index.php?example=14">decrement 4</a>
+ <li> <a href="index.php?example=15">decrement 5</a>
+ <li> <a href="index.php?example=21">decrement 1</a>
+ <li> <a href="index.php?example=22">decrement 2</a>
+ <li> <a href="index.php?example=23">decrement 3</a>
 </ul>
 
 <h2>Source code</h2>

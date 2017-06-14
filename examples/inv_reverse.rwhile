@@ -1,16 +1,7 @@
-proc ERASELEN((Y.N))
-  if && (=? N nil) (=? Y nil)
-  else (H.Y) <= Y;
-       (nil.N) <= N;
-       Y <= call ERASELEN((Y.N));
-       Y <= (H.Y);
-  fi =? Y nil;
-  return Y;
-
 proc MAIN(Y)
-  call ERASELEN(TMP2) <= Y;
+  uncall ERASELEN(TMP2) <= Y;
   (Y.N) <= TMP2;
-  call REV(TMP) <= (Y.N);
+  uncall REV(TMP) <= (Y.N);
   (X.Y) <= TMP;
   return X;
 

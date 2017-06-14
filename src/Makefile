@@ -25,7 +25,7 @@ clean:
 
 distclean: clean
 	-rm -f LexRwhile.* ParRwhile.* LayoutRwhile.* SkelRwhile.* PrintRwhile.* ShowRwhile.* TestRwhile.* AbsRwhile.* TestRwhile BNFC_Util.ml\
-	 	ri
+	 	ri parseVal
 
 install: ri
 	cp -f ./ri ../web/

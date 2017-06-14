@@ -3,6 +3,7 @@ open PrintRwhile
 open List
 
 let proc_list = ref []
+let forward = ref true          (* directioin *)
 
 type store = (rIdent * valT) list
 
@@ -23,18 +24,20 @@ let rec insert x : 'a list -> 'a list = function
 
 let merge xs ys = fold_right insert xs ys
 
+let merge' xss = fold_right merge xss []
+
 (* Reversible update *)
 let rec rupdate (x, vx) = function
   | [] -> failwith ("Variable " ^ printTree prtRIdent x ^ " is not found (1)")
-  | (y, vy) :: ys -> if x = y 
-		     then (if vy = VNil 
-			   then (y, vx)
-			   else if vx = vy 
-			   then (y, VNil)
-			   else if vx = VNil
-			   then (y, vy)
-			   else failwith "error in update") :: ys
-		     else (y, vy) :: rupdate (x, vx) ys
+  | (y, vy) :: ys when x = y ->
+     let oplus d e = if d = VNil then
+		       e
+		     else if d = e && d != VNil then
+		       VNil
+		     else 
+                       failwith "error in update"
+     in (y, oplus vx vy) :: ys
+  | (y, vy) :: ys -> (y, vy) :: rupdate (x, vx) ys
 
 (* Irreversible update *)
 let rec update (x, vx) = function
@@ -43,6 +46,7 @@ let rec update (x, vx) = function
 		     then (y, vx) :: ys
 		     else (y, vy) :: update (x, vx) ys
 
+(* store の中がすべてゼロクリアされていることを確認する *)
 let all_cleared (s : store) = for_all (fun (_, v) -> v = VNil) s
 
 let rec varExp : exp -> rIdent list = function
@@ -61,37 +65,37 @@ let rec varPat : pat -> rIdent list = function
  | PAtom _ -> []
  | PNil  -> []
  | PCall (x,pat) -> varPat pat
- (* | PUncall (x,pat) -> varPat pat *)
+ | PUncall (x,pat) -> varPat pat
 
 let rec varCom : com -> rIdent list = function
   | CAsn (x,e) -> insert x (varExp e)
   | CRep (q, r) -> merge (varPat q) (varPat r)
   | CCond (e, thenBranch, elseBranch, f) ->
-     fold_right merge [varExp e; varExp f; varThenBranch thenBranch; varElseBranch elseBranch] []
+     merge' [varExp e; varExp f; varThenBranch thenBranch; varElseBranch elseBranch]
   | CLoop (e, doBranch, loopBranch, f) ->
-     fold_right merge [varExp e; varExp f; varDoBranch doBranch; varLoopBranch loopBranch] []
+     merge' [varExp e; varExp f; varDoBranch doBranch; varLoopBranch loopBranch]
   | CShow _ -> []
 
 and varThenBranch = function
-  | BThen cs  -> List.concat (List.map varCom cs)
+  | BThen cs  -> merge' (List.map varCom cs)
   | BThenNone -> []
 
 and varElseBranch = function
-  | BElse cs  -> List.concat (List.map varCom cs)
+  | BElse cs  -> merge' (List.map varCom cs)
   | BElseNone -> []
 
 and varDoBranch = function
-  | BDo cs  -> List.concat (List.map varCom cs)
+  | BDo cs  -> merge' (List.map varCom cs)
   | BDoNone -> []
 
 and varLoopBranch = function
-  | BLoop cs  -> List.concat (List.map varCom cs)
+  | BLoop cs  -> merge' (List.map varCom cs)
   | BLoopNone -> []
 
 let varProc (Proc (name, x, c, y)) : rIdent list =
-  merge (varPat x) (merge (varPat y) (fold_right merge (List.map varCom c) []))
+  merge' (varPat x :: varPat y :: List.map varCom c)
 
-let rec varProgram (Prog ps) = fold_right merge (List.map varProc ps) []
+let varProgram (Prog ps) = merge' (List.map varProc ps)
 
 (* Evaluation *)
 let evalVariable s (Var x) =
@@ -99,6 +103,13 @@ let evalVariable s (Var x) =
     assoc x s
   with Not_found ->
     print_endline ("evalVariable: " ^ printTree prtStore s ^ "\n" ^ printTree prtVariable (Var x));
+    raise Not_found
+
+let lookup name = 
+  try
+    find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+  with Not_found ->
+    print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
     raise Not_found
 
 let rec evalExp s = function
@@ -114,7 +125,7 @@ let rec evalExp s = function
   | EVar x -> evalVariable s x
   | EVal v -> v
 
-and evalPat s p = match p with
+let rec evalPat s = function
     PCons (q, r) -> let (s1, d1) = evalPat s q in
 		    let (s2, d2) = evalPat s1 r in
 		    (s2, VCons (d1, d2))
@@ -124,47 +135,71 @@ and evalPat s p = match p with
   | PAtom x -> (s, VAtom x)
   | PCall (name,arg) ->
      let (s',v) = evalPat s arg in
-     let aproc = 
-       try
-         find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
-       with Not_found ->
-         print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
-         raise Not_found
-     in
-     (s',evalProgram (Prog (aproc :: !proc_list)) v)
+     (s',evalProc (lookup name) v)
+  | PUncall (name,arg) ->
+     let (s',v) = evalPat s arg in
+     let aproc = lookup name in
+     let v' = (if !forward then
+                 (let v'' = forward := not !forward; evalProc (InvRwhile.invProc aproc) v in forward := not !forward; v'')
+               else
+                 evalProc aproc v)
+     in (s',v')
 
-and inv_evalPat s (p,v) = match (p,v) with
-    (PCons (p1, p2), VCons (v1, v2)) -> let s1 = inv_evalPat s (p1, v1) in
-					inv_evalPat s1 (p2, v2)
-  | (PVar (Var y), v) -> if evalVariable s (Var y) = VNil
-			 then update (y, v) s
-			 else (print_string ("impossible happened in inv_evalPat.PVar\n" ^
-					       "pattern: " ^ printTree prtPat p ^ "\n" ^
-						 "term: " ^ printTree prtValT v ^ "\n" ^
-						   "store: " ^ printTree prtStore s ^ "\n");
-			       failwith "in inv_evalPat.PVar"
-			      )
-  | (PNil, VNil) -> s
-  | (PAtom x, VAtom y) -> if x = y then s
-		          else failwith ("Pattern matching failed.\n" ^
-				           printTree prtPat (PAtom x) ^ " and " ^ printTree prtValT (VAtom y) ^ " are not equal (in inv_evalPat)\n" ^
-				             printTree prtStore s ^ "\n")
-  | (PCons _, v) -> failwith ("impossible happened in inv_evalPat.PCons\n" ^
-				     "pattern: " ^ printTree prtPat p ^ "\n" ^
-				       "term: " ^ printTree prtValT v ^ "\n" ^
-					 "store: " ^ printTree prtStore s ^ "\n"
-				  )
-  | (PCall (name,arg), v') ->
-     let aproc = 
-       try
-         find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
-       with Not_found ->
-         print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
-         raise Not_found
-     in
-     let v = evalProgram (InvRwhile.invProgram (Prog (aproc :: !proc_list))) v' in
-     inv_evalPat s (arg,v)
-  | _ -> failwith "not matched"
+and inv_evalPat s (p,v) =
+  forward := not !forward;
+  let res =
+    (match (p,v) with
+       (PCons (p1, p2), VCons (v1, v2)) -> let s1 = inv_evalPat s (p1, v1) in
+					   inv_evalPat s1 (p2, v2)
+     | (PVar (Var y), v) -> if evalVariable s (Var y) = VNil
+			    then update (y, v) s
+			    else (print_string ("impossible happened in inv_evalPat.PVar\n" ^
+					          "pattern: " ^ printTree prtPat p ^ "\n" ^
+						    "term: " ^ printTree prtValT v ^ "\n" ^
+						      "store: " ^ printTree prtStore s ^ "\n");
+			          failwith "in inv_evalPat.PVar"
+			         )
+     | (PNil, VNil) -> s
+     | (PAtom x, VAtom y) -> if x = y then s
+		             else failwith ("Pattern matching failed.\n" ^
+				              printTree prtPat (PAtom x) ^ " and " ^ printTree prtValT (VAtom y) ^ " are not equal (in inv_evalPat)\n" ^
+				                printTree prtStore s ^ "\n")
+     | (PCons _, v) -> failwith ("impossible happened in inv_evalPat.PCons\n" ^
+				   "pattern: " ^ printTree prtPat p ^ "\n" ^
+				     "term: " ^ printTree prtValT v ^ "\n" ^
+				       "store: " ^ printTree prtStore s ^ "\n"
+			        )
+     | (PCall (name,arg), v') ->
+        let aproc = 
+          try
+            find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+          with Not_found ->
+            print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
+            raise Not_found
+        in
+        let v' = if !forward then
+                   evalProc aproc v
+                 else
+                   evalProc (InvRwhile.invProc aproc) v
+        in
+        inv_evalPat s (arg,v')
+     | (PUncall (name,arg), v') ->
+        let aproc = 
+          try
+            find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+          with Not_found ->
+            print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
+            raise Not_found
+        in
+        let v' = if !forward then
+                   evalProc (InvRwhile.invProc aproc) v
+                 else
+                   evalProc aproc v
+        in
+        inv_evalPat s (arg,v')
+     | _ -> failwith "not matched in inv_evalPat") in
+  forward := not !forward;
+  res
 
 and evalComs (s : store) cs = match cs with
     []     -> s
@@ -193,7 +228,7 @@ and evalCom (s : store) : com -> store = function
   | CLoop (e, dobranch, loopbranch, f) ->
      if evalExp s e = vtrue then
        let s1 = match dobranch with
-	   BDo cs -> evalComs s cs
+	   BDo cs  -> evalComs s cs
 	 | BDoNone -> s
        in
        evalLoop s1 (e, dobranch, loopbranch, f)
@@ -201,29 +236,30 @@ and evalCom (s : store) : com -> store = function
   | CShow e -> (print_string (printTree prtExp e ^ " = " ^ printTree prtValT (evalExp s e) ^ "\n"); s)
 
 and evalLoop (s : store) (e, dobranch, loopbranch, f) : store =
-  if evalExp s f = VCons (VNil, VNil)
+  if evalExp s f = vtrue
   then s
   else
     let s1 = (match loopbranch with
 	 	BLoop cs  -> evalComs s cs
 	      | BLoopNone -> s)
     in
-    assert (evalExp s1 e = VNil);
+    assert (evalExp s1 e = vfalse);
     let s2 = (match dobranch with
 		BDo cs  -> evalComs s1 cs
 	      | BDoNone -> s1)
     in
     evalLoop s2 (e, dobranch, loopbranch, f)
 
-and evalProgram (Prog prog : program) (v : valT): valT =
+and evalProc (Proc (name, x, cs, y) as p : proc) (v : valT) : valT =
+  let s = List.map (fun x -> (x, VNil)) (varProc p) in
+  let s1 = inv_evalPat s (x,v) in
+  let s2 = evalComs s1 cs in
+  let (s3,res) = evalPat s2 y in
+  if all_cleared s3 then res
+  else failwith ("Some variables are not nil.\n" ^ printTree prtStore s3)
+
+let evalProgram (Prog prog : program) (v : valT) : valT =
+  proc_list := prog;
   match prog with
-    [] -> failwith "no procedure"
-  | p :: ps ->
-    let Proc (name, x, cs, y) = p in
-    proc_list := (p :: ps);
-    let s = List.map (fun x -> (x, VNil)) (varProc p) in
-    let s1 = inv_evalPat s (x,v) in
-    let s2 = evalComs s1 cs in
-    let (s3,res) = evalPat s2 y in
-    if all_cleared s3 then res
-    else failwith ("Some variables are not nil.\n" ^ printTree prtStore s3)
+    []     -> failwith "no procedure"
+  | p :: _ -> evalProc p v
