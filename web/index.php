@@ -18,21 +18,21 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
 <?php
 if ($example == 1) {
 	$filename = "reverse.rwhile";
-} if ($example == 11) {
+} else if ($example == 11) {
 	$filename = "decrement1.rwhile";
-} if ($example == 12) {
+} else if ($example == 12) {
 	$filename = "decrement2.rwhile";
-} if ($example == 13) {
+} else if ($example == 13) {
 	$filename = "decrement3.rwhile";
-} if ($example == 14) {
+} else if ($example == 14) {
 	$filename = "decrement4.rwhile";
-} if ($example == 15) {
+} else if ($example == 15) {
 	$filename = "decrement5.rwhile";
-} if ($example == 21) {
+} else if ($example == 21) {
 	$filename = "increment1.rwhile";
-} if ($example == 22) {
+} else if ($example == 22) {
 	$filename = "increment2.rwhile";
-} if ($example == 23) {
+} else if ($example == 23) {
 	$filename = "increment3.rwhile";
 } else {
 	$filename = "reverse.rwhile";
