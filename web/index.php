@@ -75,9 +75,9 @@ echo($con);
  <li> <a href="index.php?example=13">decrement 3</a>
  <li> <a href="index.php?example=14">decrement 4</a>
  <li> <a href="index.php?example=15">decrement 5</a>
- <li> <a href="index.php?example=21">decrement 1</a>
- <li> <a href="index.php?example=22">decrement 2</a>
- <li> <a href="index.php?example=23">decrement 3</a>
+ <li> <a href="index.php?example=21">increment 1</a>
+ <li> <a href="index.php?example=22">increment 2</a>
+ <li> <a href="index.php?example=23">increment 3</a>
 </ul>
 
 <h2>Source code</h2>
