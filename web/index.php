@@ -12,6 +12,8 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
   <body>
   <h1>R-WHILE (w/ procedures) Playground</h1>
 
+<p> <font color="red"><a href="../rwhile-wprocedure-playground-170620">The old version available on July 20, 2017</a> has errors.</font>
+
 <form action="execute.php" method="post">
 <h3>R-WHILE code</h3>
 <textarea name="prog" rows="20" cols="100">
@@ -34,6 +36,8 @@ if ($example == 1) {
 	$filename = "increment2.rwhile";
 } else if ($example == 23) {
 	$filename = "increment3.rwhile";
+} else if ($example == 30) {
+	$filename = "move.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -80,6 +84,7 @@ echo($con);
  <li> <a href="index.php?example=15">decrement 5</a>
  -->
  <li> <a href="index.php?example=1">reverse</a>
+ <li> <a href="index.php?example=30">move a value by reversible assignments</a>
 </ul>
 
 <h2>Source code</h2>
