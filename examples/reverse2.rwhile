@@ -1,0 +1,27 @@
+proc MAIN(X)
+  return call REVERSE(X);
+
+proc REVERSE(X)
+  TMP <= (X.Y);
+  (Y.N) <= call REV(TMP);
+  TMP2 <= (Y.N);
+  Y <= call ERASELEN(TMP2);
+  return Y;
+
+proc REV((X.Y))
+  if =? X nil
+  else (H.X) <= X;
+       Y <= (H.Y);
+       (Y.N) <= call REV((X.Y));
+       N <= (nil.N);
+  fi =? N nil;
+  return (Y.N);
+
+proc ERASELEN((Y.N))
+  if && (=? N nil) (=? Y nil)
+  else (H.Y) <= Y;
+       (nil.N) <= N;
+       Y <= call ERASELEN((Y.N));
+       Y <= (H.Y);
+  fi =? Y nil;
+  return Y

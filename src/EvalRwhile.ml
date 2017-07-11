@@ -35,8 +35,8 @@ let rec rupdate (x, vx) = function
 		     else if d = e && d != VNil then
 		       VNil
 		     else 
-                       failwith "error in update"
-     in (y, oplus vx vy) :: ys
+                       failwith ("error in update: left operand = " ^ PrintRwhile.printTree PrintRwhile.prtValT d ^ ", right operand = " ^ PrintRwhile.printTree PrintRwhile.prtValT e)
+     in (y, oplus vy vx) :: ys
   | (y, vy) :: ys -> (y, vy) :: rupdate (x, vx) ys
 
 (* Irreversible update *)
