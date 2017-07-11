@@ -59,7 +59,7 @@ test: ri
 	./ri ../examples/reverse.rwhile ../examples/nil.val
 	./ri ../examples/reverse.rwhile ../examples/reverse.val
 	./ri ../examples/reverse2.rwhile ../examples/reverse.val
-	./ri ../examples/reverse2_inv.rwhile ../examples/reverse.val
+	./ri ../examples/inv_reverse.rwhile ../examples/reverse.val
 	./ri ../examples/increment1.rwhile ../examples/nil_nil_nil.val
 	./ri ../examples/increment2.rwhile ../examples/nil_nil_nil.val
 	./ri ../examples/increment3.rwhile ../examples/nil_nil_nil.val

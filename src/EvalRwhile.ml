@@ -3,7 +3,6 @@ open PrintRwhile
 open List
 
 let proc_list = ref []
-let forward = ref true          (* directioin *)
 
 type store = (rIdent * valT) list
 
@@ -139,14 +138,10 @@ let rec evalPat s = function
   | PUncall (name,arg) ->
      let (s',v) = evalPat s arg in
      let aproc = lookup name in
-     let v' = (if !forward then
-                 (let v'' = forward := not !forward; evalProc (InvRwhile.invProc aproc) v in forward := not !forward; v'')
-               else
-                 evalProc aproc v)
+     let v' = evalProc (InvRwhile.invProc aproc) v
      in (s',v')
 
 and inv_evalPat s (p,v) =
-  forward := not !forward;
   let res =
     (match (p,v) with
        (PCons (p1, p2), VCons (v1, v2)) -> let s1 = inv_evalPat s (p1, v1) in
@@ -177,10 +172,7 @@ and inv_evalPat s (p,v) =
             print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
             raise Not_found
         in
-        let v' = if !forward then
-                   evalProc aproc v
-                 else
-                   evalProc (InvRwhile.invProc aproc) v
+        let v' = evalProc (InvRwhile.invProc aproc) v
         in
         inv_evalPat s (arg,v')
      | (PUncall (name,arg), v') ->
@@ -191,14 +183,11 @@ and inv_evalPat s (p,v) =
             print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
             raise Not_found
         in
-        let v' = if !forward then
-                   evalProc (InvRwhile.invProc aproc) v
-                 else
-                   evalProc aproc v
+        let v' = evalProc aproc v
         in
         inv_evalPat s (arg,v')
-     | _ -> failwith "not matched in inv_evalPat") in
-  forward := not !forward;
+     | _ -> failwith "not matched in inv_evalPat")
+  in
   res
 
 and evalComs (s : store) cs = match cs with
