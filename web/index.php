@@ -38,6 +38,14 @@ if ($example == 1) {
 	$filename = "increment3.rwhile";
 } else if ($example == 30) {
 	$filename = "move.rwhile";
+} else if ($example == 101 || $example == 102) {
+	$filename = "snoc_docall.rwhile";
+} else if ($example == 103 || $example == 104) {
+	$filename = "snoc_doinvuncall.rwhile";
+} else if ($example == 111 || $example == 112) {
+	$filename = "unsnoc_douncall.rwhile";
+} else if ($example == 113 || $example == 114) {
+	$filename = "unsnoc_doinvcall.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -52,6 +60,14 @@ if ($example == 1) {
     $data = "reverse.val";
 } if (11 <= $example && $example <= 23) {
     $data = "nil_nil_nil.val";
+} if ($example == 101 || $example == 103) {
+    $data = "ab_and_c.val";
+} if ($example == 102 || $example == 104) {
+    $data = "nil_and_c.val";
+} if ($example == 111 || $example == 113) {
+    $data = "abc.val";
+} if ($example == 112 || $example == 114) {
+    $data = "c.val";
 } else {
     $data = "reverse.val";
 }
@@ -85,6 +101,10 @@ echo($con);
  -->
  <li> <a href="index.php?example=1">reverse</a>
  <li> <a href="index.php?example=30">move a value by reversible assignments</a>
+ <li> forward: call snoc <a href="index.php?example=101">1</a>, <a href="index.php?example=102">2</a>
+ <li> forward: inverse uncall snoc <a href="index.php?example=103">1</a>, <a href="index.php?example=104">2</a>
+ <li> backward: uncall snoc <a href="index.php?example=111">1</a>, <a href="index.php?example=112">2</a>
+ <li> backward: inverse call snoc <a href="index.php?example=113">1</a>, <a href="index.php?example=114">2</a>
 </ul>
 
 <h2>Source code</h2>

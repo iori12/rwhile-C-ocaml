@@ -1,0 +1,12 @@
+proc DOUNCALL(OUT)             (* backward: uncall snoc *)
+  IN <= uncall SNOC(OUT);
+  return IN;
+
+proc SNOC((X.Y))               (* append Y as last element to list X *)
+  if =? X nil
+  then X <= (Y.nil);           (* make one-element list *)
+  else (H.X) <= X;    
+       X <= call SNOC((X.Y));  (* recursive descent over X *)
+       X <= (H.X);
+  fi =? (tl X) nil;            (* one-element list? *)
+  return X
