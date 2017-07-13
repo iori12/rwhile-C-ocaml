@@ -58,15 +58,15 @@ echo($con);
 <?php
 if ($example == 1) {
     $data = "reverse.val";
-} if (11 <= $example && $example <= 23) {
+} elseif (11 <= $example && $example <= 23) {
     $data = "nil_nil_nil.val";
-} if ($example == 101 || $example == 103) {
+} elseif ($example == 101 || $example == 103) {
     $data = "ab_and_c.val";
-} if ($example == 102 || $example == 104) {
+} elseif ($example == 102 || $example == 104) {
     $data = "nil_and_c.val";
-} if ($example == 111 || $example == 113) {
+} elseif ($example == 111 || $example == 113) {
     $data = "abc.val";
-} if ($example == 112 || $example == 114) {
+} elseif ($example == 112 || $example == 114) {
     $data = "c.val";
 } else {
     $data = "reverse.val";
