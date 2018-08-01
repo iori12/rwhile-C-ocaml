@@ -6,7 +6,7 @@ proc DIV(X)
   from =? Y nil loop
     (nil.(nil.X)) <= X;
     Y <= (nil.Y);
-  until =? (=? X nil) (=? X (nil.nil));
+  until || (=? X nil) (=? X (nil.nil));
   return (Y.X);
 
 proc DUP(X)

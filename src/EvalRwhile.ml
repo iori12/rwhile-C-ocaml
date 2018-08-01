@@ -50,6 +50,7 @@ let all_cleared (s : store) = for_all (fun (_, v) -> v = VNil) s
 
 let rec varExp : exp -> rIdent list = function
   | EAnd (e1, e2) -> merge (varExp e1) (varExp e2)
+  | EOr  (e1, e2) -> merge (varExp e1) (varExp e2)
   | ECons (e1, e2) -> merge (varExp e1) (varExp e2)
   | EHd e -> varExp e
   | ETl e -> varExp e
