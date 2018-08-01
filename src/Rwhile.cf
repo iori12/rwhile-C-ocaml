@@ -53,11 +53,13 @@ BLoopNone. LoopBranch ::= ;
 -- Expression
 -------------------------------------------------------------------------------
 
+EAtom. Exp  ::= "atom" Exp1 ;
 ECons. Exp  ::= "cons" Exp1 Exp1 ;
 EHd.   Exp  ::= "hd" Exp1 ;
 ETl.   Exp  ::= "tl" Exp1 ;
 EEq.   Exp  ::= "=?" Exp1 Exp1 ;     -- Equality check
 EAnd.  Exp  ::= "&&" Exp1 Exp1 ;
+EOr.   Exp  ::= "||" Exp1 Exp1 ;
 EVar.  Exp1 ::= Variable ;
 EVal.  Exp1 ::= Val ;
 coercions Exp 1;

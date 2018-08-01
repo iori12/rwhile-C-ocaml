@@ -112,7 +112,10 @@ let lookup name =
     raise Not_found
 
 let rec evalExp s = function
-    ECons (e1, e2) -> VCons (evalExp s e1, evalExp s e2)
+  | EAtom e1 -> (match evalExp s e1 with
+                 | VNil | VAtom _ -> vtrue
+                 | _ -> vfalse)
+  | ECons (e1, e2) -> VCons (evalExp s e1, evalExp s e2)
   | EHd e -> (match evalExp s e with
 	      | VNil | VAtom _ as v -> failwith ("No head. Expression " ^ printTree prtExp (EHd e) ^ " has value " ^ printTree prtValT v)
 	      | VCons (v,_) -> v)
@@ -120,6 +123,7 @@ let rec evalExp s = function
 	      | VNil | VAtom _ as v -> failwith ("No tail. Expression " ^ printTree prtExp (ETl e) ^ " has value " ^ printTree prtValT v)
 	      | VCons (_,v) -> v)
   | EAnd (e1, e2) -> if evalExp s e1 = vtrue && evalExp s e2 = vtrue then vtrue else vfalse
+  | EOr  (e1, e2) -> if evalExp s e1 = vfalse && evalExp s e2 = vfalse then vfalse else vtrue
   | EEq (e1, e2) -> if evalExp s e1 = evalExp s e2 then vtrue else vfalse
   | EVar x -> evalVariable s x
   | EVal v -> v
