@@ -48,6 +48,8 @@ if ($example == 1) {
 	$filename = "unsnoc_douncall.rwhile";
 } else if ($example == 113 || $example == 114) {
 	$filename = "unsnoc_doinvcall.rwhile";
+} elseif ($example == 120) {
+    $filename = "bennett.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -70,6 +72,8 @@ if ($example == 1) {
     $data = "abc.val";
 } elseif ($example == 112 || $example == 114) {
     $data = "c.val";
+} elseif ($example == 120) {
+    $data = "seven.val";
 } else {
     $data = "reverse.val";
 }
@@ -105,6 +109,7 @@ echo($con);
  <li> forward: inverse uncall snoc <a href="index.php?example=103">1</a>, <a href="index.php?example=104">2</a>
  <li> backward: uncall snoc <a href="index.php?example=111">1</a>, <a href="index.php?example=112">2</a>
  <li> backward: inverse call snoc <a href="index.php?example=113">1</a>, <a href="index.php?example=114">2</a>
+ <li> <a href="index.php?example=120">call-copy-uncall scheme</a>
 </ul>
 
 <h2>Source code</h2>
