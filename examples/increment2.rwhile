@@ -1,10 +1,10 @@
 (* +1 *)
 
-proc MAIN(call DEC(X))
+proc MAIN(X)
+  return call INC(X);
+
+proc INC(X)
+  return uncall DEC(X);
+
+proc DEC((nil.X))
   return X;
-
-proc DEC(call INC(Y))
-  return Y;
-
-proc INC(Z)
-  return (nil.Z)

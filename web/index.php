@@ -89,10 +89,8 @@ echo($con);
 
 <h2>Sample programs and data</h2>
 <ul>
- <li> <a href="index.php?example=21">increment 1</a>
+ <li> increment <a href="index.php?example=21">1</a>, <a href="index.php?example=22">2</a>, <a href="index.php?example=23">3</a>
 <!--
- <li> <a href="index.php?example=22">increment 2</a>
- <li> <a href="index.php?example=23">increment 3</a>
  <li> <a href="index.php?example=11">decrement 1</a>
  <li> <a href="index.php?example=12">decrement 2</a>
  <li> <a href="index.php?example=13">decrement 3</a>

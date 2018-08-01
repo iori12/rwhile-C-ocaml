@@ -1,8 +1,10 @@
 (* +1 *)
 
 proc MAIN(X)
-  call DEC(X) <= X;
+  return call INC(X);
+
+proc INC(call DEC(X))
   return X;
 
 proc DEC((nil.X))
-  return X
+  return X;

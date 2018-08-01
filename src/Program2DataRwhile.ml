@@ -10,7 +10,7 @@ let rec conss = function	(* 演算子 cons* *)
 
 let rec repeat s n = if n = 0 then [] else s :: repeat s (n-1)
 
-let doNothing = conss [atom "'ass"; conss [atom "'var"; VNil]; conss [atom "'val"; VNil]]
+let doNothing = conss [atom "'asn"; conss [atom "'var"; VNil]; conss [atom "'val"; VNil]]
 
 let rec transRIdent (RIdent str) : valT =
   try conss (repeat VNil (int_of_string str))
@@ -41,7 +41,7 @@ and transComs (cs : com list) : valT =
 
 and transCom (c : com) : valT = 
   conss (match c with
-	 | CAsn (x, e) -> [atom "'ass"; conss [atom "'var"; transRIdent x]; transExp e]
+	 | CAsn (x, e) -> [atom "'asn"; conss [atom "'var"; transRIdent x]; transExp e]
 	 | CRep (p1, p2) -> [atom "'rep"; transPat p1; transPat p2]
 	 | CCond (e, thenbranch, elsebranch, f) -> 
 	    [atom "'cond"; conss [transExp e; transThenBranch thenbranch; transElseBranch elsebranch; transExp f; VNil]]
