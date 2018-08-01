@@ -36,6 +36,8 @@ if ($example == 1) {
 	$filename = "increment2.rwhile";
 } else if ($example == 23) {
 	$filename = "increment3.rwhile";
+} else if ($example == 24) {
+	$filename = "increment4.rwhile";
 } else if ($example == 30) {
 	$filename = "move.rwhile";
 } else if ($example == 101 || $example == 102) {
@@ -89,7 +91,7 @@ echo($con);
 
 <h2>Sample programs and data</h2>
 <ul>
- <li> increment <a href="index.php?example=21">1</a>, <a href="index.php?example=22">2</a>, <a href="index.php?example=23">3</a>
+ <li> increment <a href="index.php?example=21">1</a>, <a href="index.php?example=22">2</a>, <a href="index.php?example=23">3</a>, <a href="index.php?example=24">4</a>
 <!--
  <li> <a href="index.php?example=11">decrement 1</a>
  <li> <a href="index.php?example=12">decrement 2</a>
