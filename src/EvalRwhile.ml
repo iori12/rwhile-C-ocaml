@@ -8,6 +8,9 @@ type store = (rIdent * valT) list
 
 let vtrue = VCons (VNil, VNil)
 let vfalse = VNil
+let vnot = function
+    VNil -> vtrue
+  | _    -> vfalse
 
 let prtStore (i : int) (e : (rIdent * valT) list) : doc = 
   let rec f = function
@@ -49,12 +52,14 @@ let rec update (x, vx) = function
 let all_cleared (s : store) = for_all (fun (_, v) -> v = VNil) s
 
 let rec varExp : exp -> rIdent list = function
-  | EAnd (e1, e2) -> merge (varExp e1) (varExp e2)
-  | EOr  (e1, e2) -> merge (varExp e1) (varExp e2)
+  | ENot (e1) -> varExp e1
+  | EAtom (e1) -> varExp e1
   | ECons (e1, e2) -> merge (varExp e1) (varExp e2)
   | EHd e -> varExp e
   | ETl e -> varExp e
   | EEq (e1, e2) -> merge (varExp e1) (varExp e2)
+  | EAnd (e1, e2) -> merge (varExp e1) (varExp e2)
+  | EOr  (e1, e2) -> merge (varExp e1) (varExp e2)
   | EVar (Var x) -> [x]
   | EVal v -> []
 
@@ -113,6 +118,7 @@ let lookup name =
     raise Not_found
 
 let rec evalExp s = function
+  | ENot e1 -> vnot (evalExp s e1)
   | EAtom e1 -> (match evalExp s e1 with
                  | VNil | VAtom _ -> vtrue
                  | _ -> vfalse)
@@ -123,7 +129,13 @@ let rec evalExp s = function
   | ETl e -> (match evalExp s e with
 	      | VNil | VAtom _ as v -> failwith ("No tail. Expression " ^ printTree prtExp (ETl e) ^ " has value " ^ printTree prtValT v)
 	      | VCons (_,v) -> v)
-  | EAnd (e1, e2) -> if evalExp s e1 = vtrue && evalExp s e2 = vtrue then vtrue else vfalse
+  | EAnd (e1, e2) -> if evalExp s e1 = vtrue then
+                       if evalExp s e2 = vtrue then
+                         vtrue
+                       else 
+                         vfalse
+                     else
+                       vfalse
   | EOr  (e1, e2) -> if evalExp s e1 = vfalse && evalExp s e2 = vfalse then vfalse else vtrue
   | EEq (e1, e2) -> if evalExp s e1 = evalExp s e2 then vtrue else vfalse
   | EVar x -> evalVariable s x

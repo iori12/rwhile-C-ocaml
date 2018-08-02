@@ -53,6 +53,7 @@ BLoopNone. LoopBranch ::= ;
 -- Expression
 -------------------------------------------------------------------------------
 
+ENot.  Exp  ::= "not" Exp1 ;
 EAtom. Exp  ::= "atom" Exp1 ;
 ECons. Exp  ::= "cons" Exp1 Exp1 ;
 EHd.   Exp  ::= "hd" Exp1 ;
