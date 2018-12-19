@@ -12,8 +12,6 @@ $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
   <body>
   <h1>R-WHILE (w/ procedures) Playground</h1>
 
-<p> <font color="red"><a href="../rwhile-wprocedure-playground-170620">The old version available on July 20, 2017</a> has errors.</font>
-
 <form action="execute.php" method="post">
 <h3>R-WHILE code</h3>
 <textarea name="prog" rows="20" cols="100">
@@ -50,6 +48,10 @@ if ($example == 1) {
 	$filename = "unsnoc_doinvcall.rwhile";
 } elseif ($example == 120) {
     $filename = "bennett.rwhile";
+} elseif ($example == 200) {
+    $filename = "tree-to-inorder-preorder.txt";
+} elseif ($example == 201) {
+    $filename = "tree-to-inorder-preorder-iterative.rwhile.txt";
 } else {
 	$filename = "reverse.rwhile";
 }
@@ -74,6 +76,8 @@ if ($example == 1) {
     $data = "c.val";
 } elseif ($example == 120) {
     $data = "seven.val";
+} elseif ($example == 200 || $example == 201) {
+    $data = "tree-to-inorder-preorder-01.val";
 } else {
     $data = "reverse.val";
 }
@@ -110,6 +114,8 @@ echo($con);
  <li> backward: uncall snoc <a href="index.php?example=111">1</a>, <a href="index.php?example=112">2</a>
  <li> backward: inverse call snoc <a href="index.php?example=113">1</a>, <a href="index.php?example=114">2</a>
  <li> <a href="index.php?example=120">call-copy-uncall scheme</a>
+ <li> <a href="index.php?example=200">Conversion of a binary tree to its inorder and preorder traversals (recursive version)</a>
+ <li> <a href="index.php?example=201">Conversion of a binary tree to its inorder and preorder traversals (iterative version)</a>
 </ul>
 
 <h2>Source code</h2>

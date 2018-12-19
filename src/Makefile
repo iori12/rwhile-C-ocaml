@@ -68,3 +68,4 @@ test: ri
 	./ri ../examples/decrement3.rwhile ../examples/nil_nil_nil.val
 	./ri ../examples/decrement4.rwhile ../examples/nil_nil_nil.val
 	./ri ../test/test01.rwhile ../test/list123.val
+	./ri ../examples/tree-to-inorder-preorder.txt ../examples/tree-to-inorder-preorder-01.val

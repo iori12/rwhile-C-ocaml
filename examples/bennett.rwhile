@@ -9,6 +9,6 @@ proc DIV(X)
   until || (=? X nil) (=? X (nil.nil));
   return (Y.X);
 
-proc DUP(X)
-  Y ^= X;
-  return (X.Y)
+proc DUP((R.G))
+  R' ^= R;
+  return (R.(R'.G))
