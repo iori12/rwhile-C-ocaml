@@ -1,4 +1,0 @@
-proc MAIN(X)
- Y ^= X;
- X ^= Y;
- return Y

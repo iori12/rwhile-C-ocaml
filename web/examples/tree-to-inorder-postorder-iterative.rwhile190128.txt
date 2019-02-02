@@ -1,0 +1,123 @@
+(* Conversion of a binary tree to its inorder and postorder traversals
+   by an iterative descent over the tree. A tree can be empty (nil).
+
+Labeled binary tree:
+tree ::= nil | (tree . (d . tree))    binary tree
+d    ::= <int>                        inner node
+
+Examples: all 5 full binary trees with 7 nodes [AbrGlu:02,Fig.8].
+T1      = ((((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))
+        = ((1 2 3) 4 5) 6 7
+IPO(T1) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+           ('1 . ('3 . ('2 . ('5 . ('4 . ('7 . ('6 . nil))))))))
+        = 1234567 . 1325476
+
+T2      = (((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))))) . ('6 . (nil . ('7 . nil))))
+        = (1 2 (3 4 5)) 6 7
+IPO(T2) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+           ('1 . ('3 . ('5 . ('4 . ('2 . ('7 . ('6 . nil))))))))
+        = 1234567 . 1354276
+
+T3      = (((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 3) 4 (5 6 7)
+IPO(T3) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+           ('1 . ('3 . ('2 . ('5 . ('7 . ('6 . ('4 . nil))))))))
+        = 1234567 . 1325764
+
+T4      = ((nil . ('1 . nil)) . ('2 . (((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 ((3 4 5) 6 7))
+IPO(T4) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+           ('1 . ('3 . ('5 . ('4 . ('7 . ('6 . ('2 . nil))))))))
+        = 1234567 . 1354762
+
+T5      = ((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil))))))))
+        = (1 2 (3 4 (5 6 7)))
+IPO(T5) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+          ('1 . ('3 . ('5 . ('7 . ('6 . ('4 . ('2 . nil))))))))
+        = 1234567 . 1357642
+
+Example: non-full binary tree with 7 nodes [Burgdorff et al. 1987,Fig.1].
+T6      = (((nil . ('1 . (nil . ('2 . nil)))) . ('3 . (nil . ('4 . nil)))) . ('5 . (nil . ('6 . (nil . ('7 . nil))))))
+        = (((nil 1 2) 3 4) 5 (nil 6 7))
+IPO(T6) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . nil))))))) .
+           ('2 . ('1 . ('4 . ('3 . ('7 . ('6 . ('5 . nil))))))))
+        = 1234567 . 2143765
+
+Example: non-full binary tree with 7 nodes [Andersson,Carlsson 1990,Fig.7; Mäkinen 2000,Fig.2].
+T7      = ((nil . ('F . ((nil . ('G . nil)) . ('B . nil)))) . ('J . ((nil . ('L . nil)) . ('C . (nil . ('H . nil))))))
+        = ((nil F (G B nil)) J (L C H))
+IPO(T7) = (('F . ('G . ('B . ('J . ('L . ('C . ('H . nil))))))) .
+           ('G . ('B . ('F . ('L . ('H . ('C . ('J . nil))))))))
+        = FGBJLCH . GBFLHCJ
+
+Example: non-full binary tree with 8 nodes [Mäkinen 1989,Fig.1].
+
+T8      = ((nil . ('B . ((nil . ('G . nil)) . ('D . (nil . ('H . nil)))))) . ('A . ((nil . ('E . nil)) . ('C . (nil . ('F . nil))))))
+        = ((nil B (G D H)) A (E C F))
+IPO(T8) = (('B . ('G . ('D . ('H . ('A . ('E . ('C . ('F . nil)))))))) .
+           ('G . ('H . ('D . ('B . ('E . ('F . ('C . ('A . nil)))))))))
+        = BGDHAECF . GHDBEFCA
+
+Example: non-full binary tree with 9 nodes [Chen et al. 1988,Fig.1].
+T9      = ((nil . ('B . (nil . ('D . nil)))) . ('A . ((((nil . ('I . nil)) . ('G . nil)) . ('E . (nil . ('H . nil)))) . ('C . (nil . ('F . nil))))))
+        = ((nil B D) A (((I G nil) E H) C F))
+IPO(T9) = (('B . ('D . ('A . ('I . ('G . ('E . ('H . ('C . ('F . nil))))))))) .
+           ('D . ('B . ('I . ('G . ('H . ('E . ('F . ('C . ('A . nil))))))))))
+        = BDAIGEHCF . DBIGHEFCA
+
+Example: non-full binary tree with 10 nodes [Cameron et al. 1989,Fig.1].
+T10      = ((((nil . ('G . nil)) . ('D . (nil . ('H . nil)))) . ('B . ((nil . ('I . nil)) . ('E . nil)))) .
+            ('A . (nil . ('C . ((nil . ('J . nil)) . ('F . nil))))))
+         = (((G D H) B (I E nil)) A (nil C (J F nil)))
+IPO(T10) = (('G . ('D . ('H . ('B . ('I . ('E . ('A . ('C . ('J . ('F . nil)))))))))) .
+            ('G . ('H . ('D . ('I . ('E . ('B . ('J . ('F . ('C . ('A . nil)))))))))))
+         = GDHBIEACJF . GHDIEBJFCA
+*)
+
+proc T2IP(T)                                (* bin.tree --> in-postorder  *)
+  (X.Y) <= call GENITER(T);                 (* fwd run of traversal       *)
+  return (X.Y);
+
+proc T2IPNEG(T)                             (* bin.tree --> in-postorder  *)
+  (X.Y) <= uncall NEGITER(T);               (* bwd run of inverse         *)
+  return (X.Y);
+
+proc IP2T((X.Y))                            (* in-postorder --> bin.tree  *)
+  T <= uncall GENITER((X.Y));               (* bwd run of traversal       *)
+  return T;
+
+proc IP2TNEG((X.Y))                         (* in-postorder --> bin.tree  *)
+  T <= call NEGITER((X.Y));                 (* fwd run of inverse         *)
+  return T;
+
+proc GENITER(T)                             (* T to in-postorder          *)
+  S <= ((nil.nil).nil);                     (* add dummy to stack bottom  *)
+  from =? Y nil loop                        (* postorder Y empty at entry *)
+    if =? T nil then                        (* tree T is empty?           *)
+      ((D.T).S) <= S;                       (* pop node-left-tree from S  *)
+      X <= (D.X);                           (* add label to inorder X     *)
+    else
+      (L.(D.T)) <= T;                       (* decompose non-empty T      *)
+      Y <= (D.Y);                           (* add label to postorder Y   *)
+      D ^= (hd Y);                          (* copy head of Y             *)
+      S <= ((D.L).S);                       (* add label-left-tree to S   *)
+    fi not (=? (hd Y) (hd (hd S)));         (* hd of Y and hd hd S neq?   *)
+  until && (=? T nil) (=? (hd (hd S)) nil); (* T is nil and bottom of S?  *)
+  ((nil.nil).nil) <= S;                     (* take dummy from stack      *)
+  return (X.Y);                             (* returns traversals         *)
+
+proc NEGITER((X.Y))                         (* inverse of GENITER         *)
+  S <= ((nil.nil).nil);
+  from && (=? T nil) (=? (hd (hd S)) nil) loop
+    if not (=? (hd Y) (hd (hd S))) then
+      (D.X) <= X;
+      S <= ((D.T).S);
+    else
+      ((D.L).S) <= S;
+      D ^= (hd Y);
+      (D.Y) <= Y;
+      T <= (L.(D.T));
+    fi =? T nil;
+  until =? Y nil;
+  ((nil.nil).nil) <= S;
+  return T;

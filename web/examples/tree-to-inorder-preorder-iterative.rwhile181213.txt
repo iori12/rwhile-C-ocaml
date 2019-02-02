@@ -1,0 +1,110 @@
+(* Conversion of a binary tree to its reversed inorder and preorder traversals
+   by an iterative descent over the tree. A tree can be empty (nil).
+   An iterative implementation of algorithm [ChenUdding'90], but returning the
+   traversals in reversed order for efficiency (cons instead of snoc).
+
+Labeled binary tree:
+tree ::= nil | (tree . (d . tree))    binary tree
+d    ::= <int>                        inner node
+
+Examples: all 5 full binary trees with 7 nodes [AbrGlu:02,Fig.8].
+T1      = ((((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))
+        = ((1 2 3) 4 5) 6 7
+IPR(T1) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) . 
+           ('6 . ('4 . ('2 . ('1 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 6421357
+
+T2      = (((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))))) . ('6 . (nil . ('7 . nil))))
+        = (1 2 (3 4 5)) 6 7
+IPR(T2) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('6 . ('2 . ('1 . ('4 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 6214357
+
+T3      = (((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 3) 4 (5 6 7)
+IPR(T3) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('4 . ('2 . ('1 . ('3 . ('6 . ('5 . ('7 . nil))))))))
+        = 1234567 . 4213657
+
+T4      = ((nil . ('1 . nil)) . ('2 . (((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 ((3 4 5) 6 7))
+IPR(T4) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('2 . ('1 . ('6 . ('4 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 2164357
+
+T5      = ((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil)))))))) 
+        = (1 2 (3 4 (5 6 7)))
+IPR(T5) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('2 . ('1 . ('4 . ('3 . ('6 . ('5 . ('7 . nil))))))))
+        = 1234567 . 2143657
+
+Example: non-full binary tree with 7 nodes [Burgdorff et al. 1987,Fig.1].
+T6      = (((nil . ('1 . (nil . ('2 . nil)))) . ('3 . (nil . ('4 . nil)))) . ('5 . (nil . ('6 . (nil . ('7 . nil))))))
+        = (((nil 1 2) 3 4) 5 (nil 6 7))
+IPR(T6) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('5 . ('3 . ('1 . ('2 . ('4 . ('6 . ('7 . nil))))))))
+        = 1234567 . 5312467
+
+Example: non-full binary tree with 7 nodes [Andersson,Carlsson 1990,Fig.7; Mäkinen 2000,Fig.2].
+T7      = ((nil . ('F . ((nil . ('G . nil)) . ('B . nil)))) . ('J . ((nil . ('L . nil)) . ('C . (nil . ('H . nil))))))
+        = ((nil F (G B nil)) J (L C H))
+IPR(T7) = (('F . ('G . ('B . ('J . ('L . ('C . ('H . (nil . nil)))))))) .
+           ('J . ('F . ('B . ('G . ('C . ('L . ('H . nil))))))))
+        = FGBJLCH . JFBGCLH
+
+Example: non-full binary tree with 8 nodes [Mäkinen 1989,Fig.1].
+
+T8      = ((nil . ('B . ((nil . ('G . nil)) . ('D . (nil . ('H . nil)))))) . ('A . ((nil . ('E . nil)) . ('C . (nil . ('F . nil))))))
+        = ((nil B (G D H)) A (E C F))
+IPR(T8) = (('B . ('G . ('D . ('H . ('A . ('E . ('C . ('F . (nil . nil))))))))) .
+           ('A . ('B . ('D . ('G . ('H . ('C . ('E . ('F . nil)))))))))
+        = BGDHAECF . ABDGHCEF
+
+Example: non-full binary tree with 9 nodes [Chen et al. 1988,Fig.1].
+T9      = ((nil . ('B . (nil . ('D . nil)))) . ('A . ((((nil . ('I . nil)) . ('G . nil)) . ('E . (nil . ('H . nil)))) . ('C . (nil . ('F . nil))))))
+        = ((nil B D) A (((I G nil) E H) C F))
+IPR(T9) = (('B . ('D . ('A . ('I . ('G . ('E . ('H . ('C . ('F . (nil . nil)))))))))) .
+           ('A . ('B . ('D . ('C . ('E . ('G . ('I . ('H . ('F . nil))))))))))
+        = BDAIGEHCF . ABDCEGIHF
+
+Example: non-full binary tree with 10 nodes [Cameron et al. 1989,Fig.1].
+T10      = ((((nil . ('G . nil)) . ('D . (nil . ('H . nil)))) . ('B . ((nil . ('I . nil)) . ('E . nil)))) .
+            ('A . (nil . ('C . ((nil . ('J . nil)) . ('F . nil))))))
+         = (((G D H) B (I E nil)) A (nil C (J F nil)))
+IPR(T10) = (('G . ('D . ('H . ('B . ('I . ('E . ('A . ('C . ('J . ('F . (nil . nil))))))))))) .
+            ('A . ('B . ('D . ('G . ('H . ('E . ('I . ('C . ('F . ('J . nil)))))))))))
+         = GDHBIEACJF . ABDGHEICFJ
+*)
+
+proc T2IP(T)                                (* bin.tree --> in-preorder   *)
+  (X.Y) <= call GENITER(T);                 (* fwd run of traversal       *)
+  (call REV(X).call REV(Y)) <= (X.Y);       (* reverse reverse traversals *)            
+  return (X.Y);
+
+proc IP2T((X.Y))                            (* in-preorder --> bin.tree   *)
+  (X.Y) <= (uncall REV(X).uncall REV(Y));   (* reverse traversals *)  
+  T <= uncall GENITER((X.Y));               (* bwd run of traversal*)
+  return T;
+
+proc GENITER(T)                             (* T to reversed in-preorder  *)
+  S <= ((nil.nil).nil);                     (* add dummy to stack bottom  *)
+  from =? Y nil loop                        (* preorder Y empty at entry  *)
+    if =? T nil then                        (* tree T is empty?           *)
+      ((D.T).S) <= S;                       (* pop node-right-tree from S *)
+      X <= (D.X);                           (* add label to inorder X     *)
+    else
+      (T.(D.R)) <= T;                       (* decompose non-empty T      *)
+      C ^= D;                               (* duplicate label D          *)
+      S <= ((D.R).S);                       (* add label-right-tree to S  *)
+      Y <= (C.Y);                           (* add label to preorder Y    *)
+    fi not (=? (hd Y) (hd (hd S)));         (* hd of Y and hd hd S neq?   *)
+  until && (=? T nil) (=? (hd (hd S)) nil); (* T is nil and bottom of S?  *)
+  ((nil.nil).nil) <= S;                     (* take dummy from stack      *)
+  return (X.Y);                             (* returns reverse traversals *)
+
+proc REV(A)                                 (* reverse list A into B      *)
+  from (=? B nil) loop                      (* iterative reversal         *)
+    (Z.A) <= A;
+    B <= (Z.B);
+  until (=? A nil);
+  return B;

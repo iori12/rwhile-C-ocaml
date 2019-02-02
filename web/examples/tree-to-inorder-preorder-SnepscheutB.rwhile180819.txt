@@ -1,0 +1,116 @@
+(* Conversion of a binary tree to its inorder and preorder traversals
+   by a recursive descent over the tree. A tree can be empty (nil).
+   A reversible implementation of algorithm [Snepscheut 1991].
+
+Labeled binary tree:
+tree ::= nil | (tree . (d . tree))    binary tree
+d    ::= <int>                        inner node
+
+Examples: all 5 full binary trees with 7 nodes [AbrGlu:02,Fig.8].
+T1      = ((((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))
+        = ((1 2 3) 4 5) 6 7
+IPR(T1) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) . 
+           ('6 . ('4 . ('2 . ('1 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 6421357
+
+T2      = (((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))))) . ('6 . (nil . ('7 . nil))))
+        = (1 2 (3 4 5)) 6 7
+IPR(T2) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('6 . ('2 . ('1 . ('4 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 6214357
+
+T3      = (((nil . ('1 . nil)) . ('2 . (nil . ('3 . nil)))) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 3) 4 (5 6 7)
+IPR(T3) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('4 . ('2 . ('1 . ('3 . ('6 . ('5 . ('7 . nil))))))))
+        = 1234567 . 4213657
+
+T4      = ((nil . ('1 . nil)) . ('2 . (((nil . ('3 . nil)) . ('4 . (nil . ('5 . nil)))) . ('6 . (nil . ('7 . nil))))))
+        = (1 2 ((3 4 5) 6 7))
+IPR(T4) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('2 . ('1 . ('6 . ('4 . ('3 . ('5 . ('7 . nil))))))))
+        = 1234567 . 2164357
+
+T5      = ((nil . ('1 . nil)) . ('2 . ((nil . ('3 . nil)) . ('4 . ((nil . ('5 . nil)) . ('6 . (nil . ('7 . nil)))))))) 
+        = (1 2 (3 4 (5 6 7)))
+IPR(T5) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('2 . ('1 . ('4 . ('3 . ('6 . ('5 . ('7 . nil))))))))
+        = 1234567 . 2143657
+
+Example: non-full binary tree with 7 nodes [Burgdorff et al. 1987,Fig.1].
+T6      = (((nil . ('1 . (nil . ('2 . nil)))) . ('3 . (nil . ('4 . nil)))) . ('5 . (nil . ('6 . (nil . ('7 . nil))))))
+        = (((nil 1 2) 3 4) 5 (nil 6 7))
+IPR(T6) = (('1 . ('2 . ('3 . ('4 . ('5 . ('6 . ('7 . (nil . nil)))))))) .
+           ('5 . ('3 . ('1 . ('2 . ('4 . ('6 . ('7 . nil))))))))
+        = 1234567 . 5312467
+
+Example: non-full binary tree with 7 nodes [Andersson,Carlsson 1990,Fig.7; Mäkinen 2000,Fig.2].
+T7      = ((nil . ('F . ((nil . ('G . nil)) . ('B . nil)))) . ('J . ((nil . ('L . nil)) . ('C . (nil . ('H . nil))))))
+        = ((nil F (G B nil)) J (L C H))
+IPR(T7) = (('F . ('G . ('B . ('J . ('L . ('C . ('H . (nil . nil)))))))) .
+           ('J . ('F . ('B . ('G . ('C . ('L . ('H . nil))))))))
+        = FGBJLCH . JFBGCLH
+
+Example: non-full binary tree with 8 nodes [Mäkinen 1989,Fig.1].
+
+T8      = ((nil . ('B . ((nil . ('G . nil)) . ('D . (nil . ('H . nil)))))) . ('A . ((nil . ('E . nil)) . ('C . (nil . ('F . nil))))))
+        = ((nil B (G D H)) A (E C F))
+IPR(T8) = (('B . ('G . ('D . ('H . ('A . ('E . ('C . ('F . (nil . nil))))))))) .
+           ('A . ('B . ('D . ('G . ('H . ('C . ('E . ('F . nil)))))))))
+        = BGDHAECF . ABDGHCEF
+
+Example: non-full binary tree with 9 nodes [Chen et al. 1988,Fig.1].
+T9      = ((nil . ('B . (nil . ('D . nil)))) . ('A . ((((nil . ('I . nil)) . ('G . nil)) . ('E . (nil . ('H . nil)))) . ('C . (nil . ('F . nil))))))
+        = ((nil B D) A (((I G nil) E H) C F))
+IPR(T9) = (('B . ('D . ('A . ('I . ('G . ('E . ('H . ('C . ('F . (nil . nil)))))))))) .
+           ('A . ('B . ('D . ('C . ('E . ('G . ('I . ('H . ('F . nil))))))))))
+        = BDAIGEHCF . ABDCEGIHF
+
+Example: non-full binary tree with 10 nodes [Cameron et al. 1989,Fig.1].
+T10      = ((((nil . ('G . nil)) . ('D . (nil . ('H . nil)))) . ('B . ((nil . ('I . nil)) . ('E . nil)))) .
+            ('A . (nil . ('C . ((nil . ('J . nil)) . ('F . nil))))))
+         = (((G D H) B (I E nil)) A (nil C (J F nil)))
+IPR(T10) = (('G . ('D . ('H . ('B . ('I . ('E . ('A . ('C . ('J . ('F . (nil . nil))))))))))) .
+            ('A . ('B . ('D . ('G . ('H . ('E . ('I . ('C . ('F . ('J . nil)))))))))))
+         = GDHBIEACJF . ABDGHEICFJ
+*)
+
+proc T2IP(T)                               (* bin.tree --> in-preorder   *)
+  (nil.(X.Y)) <= call GEN((T.((nil.nil).nil)));  (* fwd run of traversal *)
+  return (X.Y);
+
+proc T2IPNEG(T)                            (* bin.tree --> in-preorder   *)
+  (nil.(X.Y)) <= uncall NEG((T.((nil.nil).nil))); (* bwd run of inverse  *)
+  return (X.Y);
+
+proc IP2T((X.Y))                           (* in-preorder --> bin.tree   *)
+  (T.((nil.nil).nil)) <= uncall GEN((nil.(X.Y))); (* bwd run of traversal*)
+  return T;
+
+proc IP2TNEG((X.Y))                        (* in-preorder --> bin.tree   *)
+  (T.((nil.nil).nil)) <= call NEG((nil.(X.Y)));  (* fwd run of inverse   *)
+  return T;
+
+proc GEN((T.(X.Y)))                        (* requires: X is non-nil     *)
+  if =? T nil then                         (* tree T is empty?           *)
+    H ^= (hd X);                           (* copy head of inorder X     *)
+  else
+    (L.(D.R)) <= T;                        (* decompose non-empty T      *)
+    (H.(X.Y)) <= call GEN((R.(X.Y)));      (* traverse right subtree R   *)
+    X <= (D.X);                            (* add label to inorder X     *)
+    (D.(X.Y)) <= call GEN((L.(X.Y)));      (* traverse left  subtree L   *)
+    Y <= (D.Y);                            (* add label to preorder Y    *)
+  fi =? H (hd X);                          (* H and head of X equal?     *)
+  return (H.(X.Y));
+
+proc NEG((H.(X.Y)))                        (* inverse of GEN *)
+  if =? H (hd X) then
+    H ^= (hd X);
+  else
+    (D.Y) <= Y;
+    (L.(X.Y)) <= call NEG((D.(X.Y)));
+    (D.X) <= X;
+    (R.(X.Y)) <= call NEG((H.(X.Y)));
+    T <= (L.(D.R));
+  fi =? T nil;
+  return (T.(X.Y));

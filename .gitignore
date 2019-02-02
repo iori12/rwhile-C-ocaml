@@ -27,11 +27,8 @@ todo.txt
 README_local.txt
 
 src/parseVal
-
-tmp/TestRwhile
-
-tmp/TestRwhile
-
-tmp/TestRwhile
+src/ri
 
 web/ri
+web/programs/
+web/data/
