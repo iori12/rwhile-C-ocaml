@@ -59,8 +59,8 @@ var cFunctions = exports.cFunctions = "\\b(?:hypot(?:f|l)?|s(?:scanf|ystem|nprin
 var c_cppHighlightRules = function() {
 
     var keywordControls = (
-        "break|case|continue|default|do|else|for|goto|if|_Pragma|fi|" +
-        "return|switch|while|catch|operator|try|throw|using"
+        "proc|from|do|loop|until|if|then|else|fi|" +
+        "return|call|uncall"
     );
 
     var storageType = (

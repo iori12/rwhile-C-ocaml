@@ -70,12 +70,49 @@ if (is_resource($process)) {
       echo "Execution timed out!\n";
     }
 ?>
-<textarea name="output" rows="30" cols="100">
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>R-WHILE Result</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/main.css">
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  </head>
+
+  <body style="padding-top:50px">
+    <script src="static/js/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">R-WHILE PLAYGROUND</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="ナビゲーション切り替え">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <button type="button" class="square_btn" onclick="history.back()">Back<i class="fas fa-step-backward"></i></button>
+        </li>
+      </ul>
+      </div>
+    </nav>
+
+    <div class="py-3">
+      <div class="container-fluid">
+        <div class="col-lg-7" id="result">
+          <h3>Result</h3>
+          <textarea name="output" style="font-family: Menlo">
 <?php
     echo $output;
 ?>
-</textarea>
+          </textarea>
 <?php
 }
-
 ?>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

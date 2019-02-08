@@ -105,7 +105,7 @@ if ($example == 1) {
           <a class="nav-link dropdown-toggle" href="#" id="example" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sample</a>
           <div class="dropdown-menu" aria-labelledby="example">
             <a class="dropdown-item" href="index.php?example=200">Conversion of a binary tree to its inorder and preorder traversals (recursive version)</a>
-            <a class="dropdown-item" href="index.php?example=201">Conversion of a binary tree to its inorder and preorder traversals (iterative version)</a>
+            <a class="dropdown-item" href="index.php?example=201">Conversion of a binary tree to its inorder and postorder traversals (iterative version)</a>
             <a class="dropdown-item" href="index.php?example=0">reverse</a>
             <a class="dropdown-item" href="index.php?example=1">swap</a>
             <!--<a class="dropdown-item" href="index.php?example=2">translation from a tree to its preorder and inorder traversal (piorder)</a>-->
