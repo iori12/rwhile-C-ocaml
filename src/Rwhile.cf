@@ -3,11 +3,11 @@
 -------------------------------------------------------------------------------
 --
 -- Variables   ∋ X, Y ::= X0 | X1 | ...
--- Expressions ∋ E, F ::= X | d | cons E F | hd E | tl E | =? E F
+-- Expressions ∋ E, F ::= X | d | cons E F | hd E | tl E | =? E F | eval ID(E)
 -- Patterns    ∋ Q, R ::= X | d | (Q.R) | call ID(Q) | uncall ID(Q)
 -- Commands    ∋ C, D ::= X ^= E | Q <= R | C; D
 --                      | if E then C else D fi F | from E do C loop D until F
--- Programs    ∋ P    ::= { proc ID(Q) C; return (R) }*
+-- Programs    ∋ P    ::= { proc ID(Q) C; return (R) | func ID(Q) return (E) }*
 --
 -------------------------------------------------------------------------------
 
@@ -22,6 +22,7 @@ Prog.  Program ::= [Proc] ;
 separator Proc ";" ;
 
 Proc.  Proc ::= "proc" RIdent "(" Pat ")" [Com] "return" Pat ;
+Func.  Proc ::= "func" RIdent "(" Pat ")" Fexp ;
 -- separator RIdent "," ;
 
 
@@ -50,6 +51,13 @@ BLoopNone. LoopBranch ::= ;
 
 
 -------------------------------------------------------------------------------
+-- Function's Expression      -- '
+-------------------------------------------------------------------------------
+
+FIf.     Fexp  ::= "if" Exp "then" Fexp "else" Fexp ;
+Freturn. Fexp  ::= "return" Exp ;
+
+-------------------------------------------------------------------------------
 -- Expression
 -------------------------------------------------------------------------------
 
@@ -58,7 +66,12 @@ EAtom. Exp  ::= "atom" Exp1 ;
 ECons. Exp  ::= "cons" Exp1 Exp1 ;
 EHd.   Exp  ::= "hd" Exp1 ;
 ETl.   Exp  ::= "tl" Exp1 ;
+Ecall. Exp  ::= "eval" RIdent "(" Exp ")" ;
 EEq.   Exp  ::= "=?" Exp1 Exp1 ;     -- Equality check
+ELt.   Exp  ::= "<" Exp1 Exp1 ;
+ELe.   Exp  ::= "<=" Exp1 Exp1 ;
+EGt.   Exp  ::= ">" Exp1 Exp1 ;
+EGe.   Exp  ::= ">=" Exp1 Exp1 ;
 EAnd.  Exp  ::= "&&" Exp1 Exp1 ;
 EOr.   Exp  ::= "||" Exp1 Exp1 ;
 EVar.  Exp1 ::= Variable ;

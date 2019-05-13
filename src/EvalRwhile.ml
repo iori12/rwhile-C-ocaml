@@ -12,6 +12,8 @@ let vnot = function
     VNil -> vtrue
   | _    -> vfalse
 
+let mkstore = List.map (fun x -> (x, VNil))
+
 let prtStore (i : int) (e : (rIdent * valT) list) : doc = 
   let rec f = function
     | [] -> concatD []
@@ -52,14 +54,12 @@ let rec update (x, vx) = function
 let all_cleared (s : store) = for_all (fun (_, v) -> v = VNil) s
 
 let rec varExp : exp -> rIdent list = function
-  | ENot (e1) -> varExp e1
-  | EAtom (e1) -> varExp e1
+  | ENot e | EAtom e -> varExp e
   | ECons (e1, e2) -> merge (varExp e1) (varExp e2)
-  | EHd e -> varExp e
-  | ETl e -> varExp e
-  | EEq (e1, e2) -> merge (varExp e1) (varExp e2)
-  | EAnd (e1, e2) -> merge (varExp e1) (varExp e2)
-  | EOr  (e1, e2) -> merge (varExp e1) (varExp e2)
+  | EHd e | ETl e -> varExp e
+  | Ecall (_, e) -> varExp e
+  | EEq (e1, e2) | ELt (e1, e2) | ELe (e1, e2) | EGt (e1, e2) | EGe (e1, e2) | EAnd (e1, e2) | EOr (e1, e2) ->
+     merge (varExp e1) (varExp e2)
   | EVar (Var x) -> [x]
   | EVal v -> []
 
@@ -67,10 +67,8 @@ let rec varExp : exp -> rIdent list = function
 let rec varPat : pat -> rIdent list = function
    PCons (q,r) -> merge (varPat q) (varPat r)
  | PVar (Var x) -> [x]
- | PAtom _ -> []
- | PNil  -> []
- | PCall (x,pat) -> varPat pat
- | PUncall (x,pat) -> varPat pat
+ | PAtom _ | PNil  -> []
+ | PCall (_,pat) | PUncall (_,pat) -> varPat pat
 
 let rec varCom : com -> rIdent list = function
   | CAsn (x,e) -> insert x (varExp e)
@@ -100,6 +98,8 @@ and varLoopBranch = function
 let varProc (Proc (name, x, c, y)) : rIdent list =
   merge' (varPat x :: varPat y :: List.map varCom c)
 
+let varFunc (Func (name, pat, _)) : rIdent list = varPat pat
+
 let varProgram (Prog ps) = merge' (List.map varProc ps)
 
 (* Evaluation *)
@@ -110,18 +110,35 @@ let evalVariable s (Var x) =
     print_endline ("evalVariable: " ^ printTree prtStore s ^ "\n" ^ printTree prtVariable (Var x));
     raise Not_found
 
-let lookup name = 
+(* procedure lookup *)
+let lookup name =
+  let f = function
+       Proc (name',_,_,_) -> name = name'
+     | Func _ -> false
+  in
   try
-    find (fun (Proc (name',_,_,_)) -> name = name') (!proc_list)
+    find f (!proc_list)
   with Not_found ->
     print_endline ("procedure " ^ printTree prtRIdent name ^ " not found");
     raise Not_found
 
+(* funcion lookup *)
+let flookup name =
+  let f = function
+       Proc _ -> false
+     | (Func (name',_,_)) -> name = name'
+  in
+  try
+    find f (!proc_list)
+  with Not_found ->
+    print_endline ("function " ^ printTree prtRIdent name ^ " not found");
+    raise Not_found
+
 let rec evalExp s = function
-  | ENot e1 -> vnot (evalExp s e1)
-  | EAtom e1 -> (match evalExp s e1 with
-                 | VNil | VAtom _ -> vtrue
-                 | _ -> vfalse)
+  | ENot e -> vnot (evalExp s e)
+  | EAtom e -> (match evalExp s e with
+                | VNil | VAtom _ -> vtrue
+                | _ -> vfalse)
   | ECons (e1, e2) -> VCons (evalExp s e1, evalExp s e2)
   | EHd e -> (match evalExp s e with
 	      | VNil | VAtom _ as v -> failwith ("No head. Expression " ^ printTree prtExp (EHd e) ^ " has value " ^ printTree prtValT v)
@@ -129,19 +146,18 @@ let rec evalExp s = function
   | ETl e -> (match evalExp s e with
 	      | VNil | VAtom _ as v -> failwith ("No tail. Expression " ^ printTree prtExp (ETl e) ^ " has value " ^ printTree prtValT v)
 	      | VCons (_,v) -> v)
-  | EAnd (e1, e2) -> if evalExp s e1 = vtrue then
-                       if evalExp s e2 = vtrue then
-                         vtrue
-                       else 
-                         vfalse
-                     else
-                       vfalse
-  | EOr  (e1, e2) -> if evalExp s e1 = vfalse && evalExp s e2 = vfalse then vfalse else vtrue
+  | Ecall (name, arg) -> evalFunc s (flookup name) (evalExp s arg)
   | EEq (e1, e2) -> if evalExp s e1 = evalExp s e2 then vtrue else vfalse
+  | ELt (e1, e2) -> if evalExp s e1 < evalExp s e2 then vtrue else vfalse
+  | ELe (e1, e2) -> if evalExp s e1 <= evalExp s e2 then vtrue else vfalse
+  | EGt (e1, e2) -> if evalExp s e1 > evalExp s e2 then vtrue else vfalse
+  | ELe (e1, e2) -> if evalExp s e1 >= evalExp s e2 then vtrue else vfalse
+  | EAnd (e1, e2) -> if evalExp s e1 = vtrue && evalExp s e2 = vtrue then vtrue else vfalse
+  | EOr  (e1, e2) -> if evalExp s e1 = vfalse && evalExp s e2 = vfalse then vfalse else vtrue
   | EVar x -> evalVariable s x
   | EVal v -> v
 
-let rec evalPat s = function
+and evalPat s = function
     PCons (q, r) -> let (s1, d1) = evalPat s q in
 		    let (s2, d2) = evalPat s1 r in
 		    (s2, VCons (d1, d2))
@@ -217,20 +233,22 @@ and evalCom (s : store) : com -> store = function
   | CRep (q, r) -> let (s1, v1) = evalPat s r in
 		   inv_evalPat s1 (q, v1)
   | CCond (e, thenbranch, elsebranch, f) ->
-     if evalExp s e = vtrue then
-       let s1 = (match thenbranch with
-		 | BThen cs  -> evalComs s cs
-		 | BThenNone -> s)
-       in
-       if evalExp s1 f = vtrue then s1
-       else failwith ("Assertion " ^ printTree prtExp f ^ " is not true.\n")
-     else
-       let s1 = match elsebranch with
-	 | BElse cs  -> evalComs s cs
-	 | BElseNone -> s
-       in
-       if evalExp s1 f = vfalse then s1
-       else failwith ("Assertion " ^ printTree prtExp f ^ " is not false.\n")
+     (match evalExp s e with
+     | VCons (VNil, VNil) ->
+        let s1 = (match thenbranch with
+		  | BThen cs  -> evalComs s cs
+		  | BThenNone -> s)
+        in
+        if evalExp s1 f = vtrue then s1
+        else failwith ("Assertion " ^ printTree prtExp f ^ " is not true.\n")
+     | VNil ->
+        let s1 = match elsebranch with
+	  | BElse cs  -> evalComs s cs
+	  | BElseNone -> s
+        in
+        if evalExp s1 f = vfalse then s1
+        else failwith ("Assertion " ^ printTree prtExp f ^ " is not false.\n")
+     | _ -> failwith ("Test " ^ printTree prtExp f ^ " is neither true nor false.\n"))
   | CLoop (e, dobranch, loopbranch, f) ->
      if evalExp s e = vtrue then
        let s1 = match dobranch with
@@ -242,9 +260,9 @@ and evalCom (s : store) : com -> store = function
   | CShow e -> (print_string (printTree prtExp e ^ " = " ^ printTree prtValT (evalExp s e) ^ "\n"); s)
 
 and evalLoop (s : store) (e, dobranch, loopbranch, f) : store =
-  if evalExp s f = vtrue
-  then s
-  else
+  match evalExp s f with
+    VCons (VNil, VNil) -> s (* vtrue *)
+  | VNil ->                (* vfalse *)
     let s1 = (match loopbranch with
 	 	BLoop cs  -> evalComs s cs
 	      | BLoopNone -> s)
@@ -255,9 +273,20 @@ and evalLoop (s : store) (e, dobranch, loopbranch, f) : store =
 	      | BDoNone -> s1)
     in
     evalLoop s2 (e, dobranch, loopbranch, f)
+  | _ -> failwith ("Test " ^ printTree prtExp f ^ " is neither true nor false.\n")
+
+and evalFunc s (Func (name, pat, fexp) : proc) (v : valT) : valT =
+  let s0 = mkstore (varPat pat) in
+  let s' = inv_evalPat (merge s s0) (pat, v) in
+  evalFexp s' fexp
+
+and evalFexp s = function
+    FIf (e, f1, f2) -> let f = if evalExp s e = vtrue then f1 else f2
+                       in evalFexp s f
+  | Freturn e -> evalExp s e
 
 and evalProc (Proc (name, x, cs, y) as p : proc) (v : valT) : valT =
-  let s = List.map (fun x -> (x, VNil)) (varProc p) in
+  let s = mkstore (varProc p) in
   let s1 = inv_evalPat s (x,v) in
   let s2 = evalComs s1 cs in
   let (s3,res) = evalPat s2 y in

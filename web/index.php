@@ -1,8 +1,6 @@
 <?php
 $example = filter_input(INPUT_GET, "example", FILTER_VALIDATE_INT);
-?>
 
-<?php
 if ($example == 1) {
 	$filename = "reverse.rwhile";
 } else if ($example == 11) {
@@ -42,9 +40,7 @@ if ($example == 1) {
 } else {
 	$filename = "reverse.rwhile";
 }
-?>
 
-<?php
 if ($example == 1) {
     $data = "reverse.val";
 } elseif (11 <= $example && $example <= 23) {
@@ -64,8 +60,8 @@ if ($example == 1) {
 } else {
     $data = "reverse.val";
 }
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -73,6 +69,7 @@ if ($example == 1) {
     <title>R-WHILE Playground</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Write and run R-WHILE programs in your browser">
+
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="static/css/main.css">
     <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
