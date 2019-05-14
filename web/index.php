@@ -95,7 +95,7 @@ if ($example == 1) {
               <input type="hidden" name="invert" value="">
               <input type="hidden" name="p2d" value="">
               <input type="hidden" name="exp" value="">
-              <button type="submit" class="square_btn"><i class="fas fa-step-forward"></i>Excute</button>
+              <button type="submit" class="square_btn"><i class="fas fa-step-forward"></i>Execute</button>
           </form>
         </li>
         <li class="nav-item dropdown">
