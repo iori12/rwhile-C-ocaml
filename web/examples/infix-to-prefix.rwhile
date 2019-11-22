@@ -1,0 +1,43 @@
+(* Conversion of an infix expression to a prefix expression (Polish notation)
+   by a recursive preorder traversal over the tree structure.
+
+Infix expression is a labeled binary tree:
+tree ::= leaf | (tree . (d . tree))   binary tree: expression
+leaf ::= 0                            leaf:        operand
+d    ::= 1 | 2 | 3 | ... | a | b ...  inner node:  operator
+
+Examples: all 5 binary trees with 7 nodes [AbrGlu:02,Fig.8].
+T1      = ((('0 . ('1 . '0)) . ('1 . '0)) . ('1 . '0))         = ((0 1 0) 1 0) 1 0
+PRE(T1) = ('1 . ('1 . ('1 . ('0 . ('0 . ('0 . ('0 . nil))))))) = 1110000
+
+T2      = (('0 . ('1 . ('0 . ('1 . '0)))) . ('1 . '0))         = (0 1 (0 1 0)) 1 0
+PRE(T2) = ('1 . ('1 . ('0 . ('1 . ('0 . ('0 . ('0 . nil))))))) = 1101000
+
+T3      = (('0 . ('1 . '0)) . ('1 . ('0 . ('1 . '0))))         = (0 1 0) 1 (0 1 0)
+PRE(T3) = ('1 . ('1 . ('0 . ('0 . ('1 . ('0 . ('0 . nil))))))) = 1100100
+
+T4      = ('0 . ('1 . (('0 . ('1 . '0)) . ('1 . '0))))         = (0 1 ((0 1 0) 1 0))
+PRE(T4) = ('1 . ('0 . ('1 . ('1 . ('0 . ('0 . ('0 . nil))))))) = 1011000
+
+T5      = ('0 . ('1 . ('0 . ('1 . ('0 . ('1 . '0))))))         = (0 1 (0 1 (0 1 0)))
+PRE(T5) = ('1 . ('0 . ('1 . ('0 . ('1 . ('0 . ('0 . nil))))))) = 1010100
+*)
+
+proc IN2PREFIX(T)                 (* infix --> prefix          *)
+  Y <= call PRE((T.nil));         (* call preorder traversal   *)
+  return Y;
+
+proc PRE2INFIX(Y)                 (* prefix --> infix          *)
+  (T.nil) <= uncall PRE(Y);       (* uncall preorder traversal *)
+  return T;
+
+proc PRE((T.Y))
+  if =? T '0 then                 (* tree T is leaf?           *)
+    Y <= (T.Y);                   (* add leaf to list Y        *)
+  else
+    (L.(D.R)) <= T;               (* decompose inner node      *)
+    Y <= call PRE((R.Y));         (* traverse right subtree R  *)
+    Y <= call PRE((L.Y));         (* traverse left  subtree L  *)
+    Y <= (D.Y);                   (* add label D to list Y     *)
+  fi =? (hd Y) '0;                (* head of list Y is leaf?   *)
+  return Y

@@ -32,12 +32,12 @@ let () =
        print_endline (if !f_p2d
 		      then myprtValT (Program2DataRwhile.program2data prog3)
 		      else showTree prog3)
-    | [prog_filename; data_filename] -> 
+    | [prog_filename; data_filename] ->
        let channel = open_in prog_filename in
-       let prog = parse channel in 
+       let prog = parse channel in
        let _ = close_in channel in
        let channel = open_in data_filename in
-       let data = parseValT channel in 
+       let data = parseValT channel in
        let _ = close_in channel in
        (try
           print_endline (myprtValT (EvalRwhile.evalProgram prog data))
