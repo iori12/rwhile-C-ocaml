@@ -38,7 +38,7 @@ if ($example == 1) {
 } elseif ($example == 201) {
     $filename = "tree-to-inorder-preorder-iterative.rwhile.txt";
 } elseif ($example == 301) {
-    $filename = "infix-to-prefix.rwhile.txt";
+    $filename = "infix-to-prefix.rwhile";
 } else {
 	$filename = "reverse.rwhile";
 }
